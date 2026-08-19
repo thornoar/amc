@@ -3,7 +3,10 @@
 
 module Object where
 
-data ObjectTag = REX | IEX
+data ObjectTag = EXP
 
 data Object a where
-  IConst :: Integer -> Object IEX
+  Const :: String -> Object EXP
+  Sum :: Object EXP -> Object EXP -> Object EXP
+  Prod :: Object EXP -> Object EXP -> Object EXP
+  Diff :: Object EXP -> Object EXP -> Object EXP
