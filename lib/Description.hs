@@ -11,3 +11,6 @@ class Description a where
 
 proxyOf :: m a -> Proxy a
 proxyOf _ = Proxy
+
+proxyOf2 :: m1 (m2 a) -> Proxy a
+proxyOf2 _ = Proxy

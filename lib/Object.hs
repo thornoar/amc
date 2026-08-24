@@ -37,3 +37,5 @@ data Object t where
   RPow :: Object REX -> Object REX -> Object REX
   RLog :: Object REX -> Object REX -> Object REX
   RVar :: String -> Object REX
+
+  Raw :: String -> Object STR

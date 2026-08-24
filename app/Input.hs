@@ -1,9 +1,9 @@
-module Action where
+module Input where
 
 import System.Console.Haskeline
 import Result
 
-type Action a = InputT IO (Result a)
+type Process a = InputT IO (Result a)
 
 color :: String -> String -> String
 color typ str = "\ESC[" ++ typ ++ "m" ++ str ++ "\ESC[0m" -- ]]
@@ -15,7 +15,7 @@ getPrompt :: Char -> String -> String
 getPrompt rep body = "\ESC[0m(" ++ color "33" body ++ ") " ++ replicate n rep ++ ": \ESC[34m" -- ]]
   where n = promptLength - length body - 5
 
-getColoredInputLine :: String -> Action String
+getColoredInputLine :: String -> Process String
 getColoredInputLine pref = do
   res <- getInputLine pref
   outputStr "\ESC[0m" -- ]
