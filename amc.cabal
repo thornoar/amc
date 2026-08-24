@@ -16,7 +16,7 @@ common warnings
 library amclib
     import:           warnings
     hs-source-dirs:   lib
-    exposed-modules:  Object, RealNumber, Simplify, Actions
+    exposed-modules:  Object, RealNumber, Simplify, Action, Result, Description
     default-language: Haskell2010
     build-depends:
         base ^>=4.20.2.0
@@ -24,7 +24,7 @@ library amclib
 executable amc
     import:           warnings
     main-is:          Main.hs
-    -- other-modules:
+    other-modules:    Action
     -- other-extensions:
     build-depends:
         base ^>=4.20.2.0,

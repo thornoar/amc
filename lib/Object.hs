@@ -3,32 +3,37 @@
 
 module Object where
 import RealNumber
+import Description
 
-data NumberSystem = ZZ | QQ | RR | Boolean
+-- data NumberSystem = ZZ | QQ | RR | Boolean
 
-data ObjectTag = EXP
+data ObjectTag = IEX | REX | STR deriving (Read, Show)
 
-data Object t ns where
+instance Description IEX where description _ = "an integer expression"
+instance Description REX where description _ = "a real number expression"
+instance Description STR where description _ = "a string"
+
+data Object t where
   -- Integer arithmetic
-  ZConst :: Integer -> Object EXP ZZ
-  ZNeg :: Object EXP ZZ -> Object EXP ZZ
-  ZSum :: [Object EXP ZZ] -> Object EXP ZZ
-  -- ZDiff :: Object EXP ZZ -> Object EXP ZZ -> Object EXP ZZ
-  ZProd :: [Object EXP ZZ] -> Object EXP ZZ
-  ZDiv :: Object EXP ZZ -> Object EXP ZZ -> Object EXP ZZ
-  ZMod :: Object EXP ZZ -> Object EXP ZZ -> Object EXP ZZ
-  ZPow :: Object EXP ZZ -> Object EXP ZZ -> Object EXP ZZ
-  ZVar :: String -> Object EXP ZZ
+  IConst :: Integer -> Object IEX
+  INeg :: Object IEX -> Object IEX
+  ISum :: [Object IEX] -> Object IEX
+  -- IDiff :: Object IEX -> Object IEX -> Object IEX
+  IProd :: [Object IEX] -> Object IEX
+  IDiv :: Object IEX -> Object IEX -> Object IEX
+  IMod :: Object IEX -> Object IEX -> Object IEX
+  IPow :: Object IEX -> Object IEX -> Object IEX
+  IVar :: String -> Object IEX
 
   -- Real number arithmetic
-  RConst :: RealNumber -> Object EXP RR
-  RNeg :: Object EXP RR -> Object EXP RR
-  RInv :: Object EXP RR -> Object EXP RR
-  RLn :: Object EXP RR -> Object EXP RR
-  RSum :: Object EXP RR -> Object EXP RR -> Object EXP RR
-  RDiff :: Object EXP RR -> Object EXP RR -> Object EXP RR
-  RProd :: Object EXP RR -> Object EXP RR -> Object EXP RR
-  RDiv :: Object EXP RR -> Object EXP RR -> Object EXP RR
-  RPow :: Object EXP RR -> Object EXP RR -> Object EXP RR
-  RLog :: Object EXP RR -> Object EXP RR -> Object EXP RR
-  RVar :: String -> Object EXP RR
+  RConst :: RealNumber -> Object REX
+  RNeg :: Object REX -> Object REX
+  RInv :: Object REX -> Object REX
+  RLn :: Object REX -> Object REX
+  RSum :: Object REX -> Object REX -> Object REX
+  RDiff :: Object REX -> Object REX -> Object REX
+  RProd :: Object REX -> Object REX -> Object REX
+  RDiv :: Object REX -> Object REX -> Object REX
+  RPow :: Object REX -> Object REX -> Object REX
+  RLog :: Object REX -> Object REX -> Object REX
+  RVar :: String -> Object REX
