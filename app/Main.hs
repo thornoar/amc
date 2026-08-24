@@ -1,7 +1,7 @@
 module Main (main) where
 
 import System.Console.Haskeline
-import Actions
+import Action
 import Object
 import Result
 import Action
