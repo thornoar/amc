@@ -1,10 +1,11 @@
 {-# LANGUAGE HexFloatLiterals #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module RealNumber where
+module RealNumber (RealNumber) where
 import Data.Ratio ((%))
 
 data RealConst = Rt Rational | Raw Double | PI | E | GAMMA | LN2
+  deriving (Read, Show)
 
 isPositiveConst :: RealConst -> Bool
 isPositiveConst (Rt r) = r > 0
@@ -23,6 +24,7 @@ data RealNumber =
   | Ln RealNumber
   | Root Integer RealNumber
   | Pow RealNumber Integer
+  deriving (Read, Show)
 
 instance Num RealNumber where
   (+) :: RealNumber -> RealNumber -> RealNumber

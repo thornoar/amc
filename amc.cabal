@@ -15,7 +15,7 @@ common warnings
 
 library amclib
     import:           warnings
-    hs-source-dirs:   lib
+    hs-source-dirs:   lib, lib/actions, lib/objects
     exposed-modules:
         Object,
         RealNumber,

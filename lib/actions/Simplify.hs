@@ -5,20 +5,12 @@
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Simplify where
+module Simplify (SimplifyResult, simplifyResult) where
 
 import Object
 import Result (Result (..))
 import Data.Kind (Constraint)
 import Description
--- import Data.Proxy (Proxy (..))
--- import RealNumber
-
-type SimplifyResult :: ObjectTag -> Constraint
-class SimplifyResult tg where
-  simplifyResult :: Object tg -> Result (Object tg)
-  default simplifyResult :: Simplify tg => Object tg -> Result (Object tg)
-  simplifyResult = Content . simplify
 
 type Simplify :: ObjectTag -> Constraint
 class Simplify tg where
@@ -54,5 +46,10 @@ instance Simplify IEX where
     (e1', e2') -> IPow e1' e2'
   simplify (IVar name) = IVar name
 
+type SimplifyResult :: ObjectTag -> Constraint
+class SimplifyResult tg where
+  simplifyResult :: Object tg -> Result (Object tg)
+  default simplifyResult :: Simplify tg => Object tg -> Result (Object tg)
+  simplifyResult = Content . simplify
 instance {-# OVERLAPPABLE #-} Description tg => SimplifyResult tg where
   simplifyResult obj = Error $ (description (proxyOf obj)) ++ " cannot be simplified"

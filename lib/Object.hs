@@ -1,5 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module Object where
 import RealNumber
@@ -13,7 +15,7 @@ instance Description IEX where description _ = "an integer expression"
 instance Description REX where description _ = "a real number expression"
 instance Description STR where description _ = "a string"
 
-data Object t where
+data Object tg where
   -- Integer arithmetic
   IConst :: Integer -> Object IEX
   INeg :: Object IEX -> Object IEX
@@ -39,3 +41,5 @@ data Object t where
   RVar :: String -> Object REX
 
   Raw :: String -> Object STR
+
+deriving instance Show (Object tg)
