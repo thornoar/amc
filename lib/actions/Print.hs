@@ -1,10 +1,6 @@
-{-# LANGUAGE StandaloneKindSignatures #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE GADTs #-}
 module Print (PrintResult, printResult) where
 
 import Object

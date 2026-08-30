@@ -1,6 +1,4 @@
-{-# LANGUAGE StandaloneKindSignatures #-}
 {-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE DataKinds #-}
 module Description where
 import Data.Kind (Constraint)
 import Data.Proxy (Proxy (..))

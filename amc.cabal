@@ -10,12 +10,22 @@ category:           Math
 build-type:         Simple
 extra-doc-files:    CHANGELOG.md
 
-common warnings
+common common
     ghc-options: -Wall
+    default-extensions:
+        DataKinds
+        GADTs
+        StandaloneKindSignatures
+        DefaultSignatures
 
 library amclib
-    import:           warnings
-    hs-source-dirs:   lib, lib/actions, lib/objects
+    import:           common
+    hs-source-dirs:
+        lib,
+        lib/actions,
+        lib/actions/spec,
+        lib/objects,
+        lib/spec
     exposed-modules:
         Object,
         RealNumber,
@@ -24,13 +34,14 @@ library amclib
         Result,
         Description,
         Parse,
+        ParseIEX,
         Print
     default-language: Haskell2010
     build-depends:
         base ^>=4.20.2.0
 
 executable amc
-    import:           warnings
+    import:           common
     main-is:          Main.hs
     other-modules:    Input
     -- other-extensions:

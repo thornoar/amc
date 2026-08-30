@@ -1,6 +1,3 @@
-{-# LANGUAGE StandaloneKindSignatures #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Parse (ParseResult, parseResult) where
@@ -10,6 +7,8 @@ import Data.Kind (Constraint)
 import Result
 import Description
 
+import qualified ParseIEX
+
 type ParseResult :: ObjectTag -> Constraint
 class ParseResult tg where
   parseResult :: String -> Result (Object tg)
@@ -18,4 +17,4 @@ class ParseResult tg where
 instance {-# OVERLAPPABLE #-} Description tg => ParseResult tg
 
 instance {-# OVERLAPPING #-} ParseResult IEX where
-  parseResult _ = Content (IConst 0)
+  parseResult = ParseIEX.parse
