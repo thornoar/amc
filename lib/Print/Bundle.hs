@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Print (PrintResult, printResult) where
+module Print.Bundle (PrintResult, printResult) where
 
-import Object
+import Object.Bundle
 import Data.Kind (Constraint)
 -- import Description
 import Result

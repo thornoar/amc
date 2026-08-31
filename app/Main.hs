@@ -3,12 +3,12 @@
 module Main (main) where
 
 import System.Console.Haskeline
-import Action
-import Object
+import Action.Bundle
+import Object.Bundle
 import Result
 import Input
-import Parse
-import Print
+import Parse.Bundle
+import Print.Bundle
 
 loop :: (ObjectTag, ActionTag) -> [String] -> InputT IO ()
 loop p@(ot, at) history = do

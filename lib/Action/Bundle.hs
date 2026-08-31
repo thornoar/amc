@@ -1,16 +1,16 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE RankNTypes #-}
-module Action where
+module Action.Bundle where
 
 -- import Simplify
 -- import Parse
 -- import Data.Kind (Constraint)
-import Object
+import Object.Bundle
 import Result
 import Data.Kind (Constraint)
-import Simplify
-import Print
-import Parse
+import Action.Simplify
+import Print.Bundle
+import Parse.Bundle
 import Description
 
 data ActionTag = SIMPL | PRINT

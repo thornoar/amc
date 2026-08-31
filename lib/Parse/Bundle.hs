@@ -1,13 +1,13 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Parse (ParseResult, parseResult) where
+module Parse.Bundle (ParseResult, parseResult) where
 
-import Object
+import Object.Bundle
 import Data.Kind (Constraint)
 import Result
 import Description
 
-import qualified ParseIEX
+import qualified Parse.Instances.ParseIEX as PIEX
 
 type ParseResult :: ObjectTag -> Constraint
 class ParseResult tg where
@@ -17,4 +17,4 @@ class ParseResult tg where
 instance {-# OVERLAPPABLE #-} Description tg => ParseResult tg
 
 instance {-# OVERLAPPING #-} ParseResult IEX where
-  parseResult = ParseIEX.parse
+  parseResult = PIEX.parse

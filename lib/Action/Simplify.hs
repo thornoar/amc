@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Simplify (SimplifyResult, simplifyResult) where
+module Action.Simplify (SimplifyResult, simplifyResult) where
 
-import Object
+import Object.Bundle
 import Result (Result (..))
 import Data.Kind (Constraint)
 import Description

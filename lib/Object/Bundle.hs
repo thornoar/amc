@@ -1,8 +1,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module Object where
-import RealNumber
+module Object.Bundle where
+import Object.RealNumber
 import Description
 
 -- data NumberSystem = ZZ | QQ | RR | Boolean

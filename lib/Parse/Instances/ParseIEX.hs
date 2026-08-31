@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# LANGUAGE BangPatterns #-}
-module ParseIEX where
+module Parse.Instances.ParseIEX (parse) where
 
-import Object
+import Object.Bundle
 import Result
 import Data.Char (isSpace, isAlpha, isAlphaNum, isDigit)
 import Text.Read (readMaybe)

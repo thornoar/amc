@@ -1,7 +1,7 @@
 {-# LANGUAGE HexFloatLiterals #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module RealNumber (RealNumber) where
+module Object.RealNumber (RealNumber) where
 import Data.Ratio ((%))
 
 data RealConst = Rt Rational | Raw Double | PI | E | GAMMA | LN2
