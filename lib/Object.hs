@@ -17,9 +17,9 @@ data Object tg where
   -- Integer arithmetic
   IConst :: Integer -> Object IEX
   INeg :: Object IEX -> Object IEX
-  ISum :: [Object IEX] -> Object IEX
+  ISum :: Object IEX -> Object IEX -> Object IEX
   -- IDiff :: Object IEX -> Object IEX -> Object IEX
-  IProd :: [Object IEX] -> Object IEX
+  IProd :: Object IEX -> Object IEX -> Object IEX
   IDiv :: Object IEX -> Object IEX -> Object IEX
   IMod :: Object IEX -> Object IEX -> Object IEX
   IPow :: Object IEX -> Object IEX -> Object IEX
