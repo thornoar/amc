@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE StandaloneDeriving #-}
 module Result where
 
 data Result a = Content a | Error String deriving Functor
+
+deriving instance Show a => Show (Result a)
 
 instance Applicative Result where
   pure = Content

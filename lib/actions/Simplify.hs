@@ -12,25 +12,24 @@ type Simplify :: ObjectTag -> Constraint
 class Simplify tg where
   simplify :: Object tg -> Object tg
 
-collectConst :: ([Integer], [Object IEX]) -> [Object IEX] -> ([Integer], [Object IEX])
-collectConst (acc1, acc2) [] = (acc1, acc2)
-collectConst (acc1, acc2) ((IConst v) : rest) = collectConst (v : acc1, acc2) rest
-collectConst (acc1, acc2) (expr : rest) = collectConst (acc1, expr : acc2) rest
-
 instance {-# OVERLAPPING #-} SimplifyResult IEX
 instance Simplify IEX where
   simplify (IConst v) = IConst v
   simplify (INeg (INeg e)) = simplify e
-  simplify (INeg (ISum es)) = simplify (ISum (map INeg es))
+  simplify (INeg (ISum e1 e2)) = simplify (ISum (INeg e1) (INeg e2))
   simplify (INeg expr) = case simplify expr of
     IConst v -> IConst (-v)
     expr' -> INeg expr'
-  simplify (ISum es) =
-    let (consts, exprs) = collectConst ([], []) (map simplify es)
-     in if length exprs == 0 then IConst (sum consts) else ISum ((IConst $ sum consts) : exprs)
-  simplify (IProd es) =
-    let (consts, exprs) = collectConst ([], []) (map simplify es)
-     in if length exprs == 0 then IConst (product consts) else IProd ((IConst $ product consts) : exprs)
+  simplify (ISum e1 e2) = case (simplify e1, simplify e2) of
+    (IConst c1, IConst c2) -> IConst (c1 + c2)
+    (IConst c1, ISum (IConst c2) f2) -> ISum (IConst (c1 + c2)) f2
+    (IConst c1, ISum f1 f2) -> ISum f1 (simplify $ ISum (IConst c1) f2)
+    (ISum (IConst c1) f2, IConst c2) -> ISum (IConst (c1 + c2)) f2
+    (ISum f1 f2, IConst c2) -> ISum f1 (simplify $ ISum f2 (IConst c2))
+    (e1', e2') -> ISum e1' e2'
+  simplify (IProd e1 e2) = case (simplify e1, simplify e2) of
+    (IConst c1, IConst c2) -> IConst (c1 * c2)
+    (e1', e2') -> IProd e1' e2'
   simplify (IDiv e1 e2) = case (simplify e1, simplify e2) of
     (IConst v1, IConst v2) -> IConst (v1 `div` v2)
     (e1', e2') -> IDiv e1' e2'
