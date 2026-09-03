@@ -8,7 +8,7 @@ import Object.Bundle
 import Result
 import Input
 import Parse.Bundle
-import Print.Bundle
+import Display.Bundle
 
 loop :: (ObjectTag, ActionTag) -> [String] -> InputT IO ()
 loop p@(ot, at) history = do
@@ -19,9 +19,9 @@ loop p@(ot, at) history = do
       Error msg -> printError msg >> loop p history
       Content obj -> action at obj $ \res -> case res of
         Error msg -> printError msg >> loop p history
-        Content obj' -> case printResult obj' of
+        Content obj' -> case displayResult obj' of
           Error msg -> printError msg >> loop p history
-          Content (Raw str) -> outputStrLn str >> loop p history
+          Content str -> outputStrLn str >> loop p history
 
 settings :: Settings IO
 settings = Settings {

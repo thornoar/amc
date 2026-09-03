@@ -9,17 +9,17 @@ import Object.Bundle
 import Result
 import Data.Kind (Constraint)
 import Action.Simplify
-import Print.Bundle
+import Display.Bundle
 import Parse.Bundle
 import Description
 
-data ActionTag = SIMPL | PRINT
+data ActionTag = SIMPL | RETURN
 
 type AllActions :: ObjectTag -> Constraint
 type family AllActions tg where
   AllActions tg = (
       Description tg,
-      PrintResult tg,
+      DisplayResult tg,
       ParseResult tg,
       SimplifyResult tg
     )
@@ -39,4 +39,4 @@ action :: AllActions tg =>
   (forall tg'. AllActions tg' => Result (Object tg') -> a) ->
   a
 action SIMPL obj cont = cont (simplifyResult obj)
-action PRINT obj cont = cont (printResult obj)
+action RETURN obj cont = cont (Content obj)
