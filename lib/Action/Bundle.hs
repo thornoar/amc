@@ -13,7 +13,7 @@ import Display.Bundle
 import Parse.Bundle
 import Description
 
-data ActionTag = SIMPL | RETURN
+data ActionTag = SIMPL | RETURN | SHOW deriving (Show, Read)
 
 type AllActions :: ObjectTag -> Constraint
 type family AllActions tg where
@@ -28,15 +28,17 @@ byTag ::
   ObjectTag ->
   (forall (tg :: ObjectTag). AllActions tg => a -> Result (Object tg)) ->
   a ->
-  (forall tg. AllActions tg => Result (Object tg) -> b) -> b
+  (forall tg. AllActions tg => Result (Object tg) -> b) ->
+  b
 byTag IEX f a cont = cont (f a :: Result (Object IEX))
 byTag REX f a cont = cont (f a :: Result (Object REX))
 byTag STR f a cont = cont (f a :: Result (Object STR))
 
 action :: AllActions tg =>
   ActionTag ->
-  Object tg ->
   (forall tg'. AllActions tg' => Result (Object tg') -> a) ->
+  Object tg ->
   a
-action SIMPL obj cont = cont (simplifyResult obj)
-action RETURN obj cont = cont (Content obj)
+action SIMPL cont obj = cont (simplifyResult obj)
+action RETURN cont obj = cont (Content obj)
+action SHOW cont obj = cont (Content $ Raw (show obj))
