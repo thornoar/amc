@@ -12,9 +12,12 @@ import qualified Parse.Instances.ParseIEX as PIEX
 type ParseResult :: ObjectTag -> Constraint
 class ParseResult tg where
   parseResult :: String -> Result (Object tg)
-  default parseResult :: Description tg => String -> Result (Object tg)
+
+instance {-# OVERLAPPABLE #-} Description tg => ParseResult tg where
   parseResult _ = let res = Error $ description (proxyOf2 res) ++ " cannot be parsed" in res
-instance {-# OVERLAPPABLE #-} Description tg => ParseResult tg
 
 instance {-# OVERLAPPING #-} ParseResult IEX where
   parseResult = PIEX.parse
+
+instance {-# OVERLAPPING #-} ParseResult STR where
+  parseResult = Content . Raw

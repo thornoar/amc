@@ -14,6 +14,7 @@ import Parse.Bundle
 import Description
 
 data ActionTag = SIMPL | RETURN | SHOW deriving (Show, Read)
+instance Description ActionTag where description _ = "an action tag"
 
 type AllActions :: ObjectTag -> Constraint
 type family AllActions tg where

@@ -1,15 +1,15 @@
 {-# LANGUAGE HexFloatLiterals #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module Object.RealNumber (RealNumber) where
+module Object.RealNumber where
 import Data.Ratio ((%))
 
-data RealConst = Rt Rational | Raw Double | PI | E | GAMMA | LN2
+data RealConst = Rt Rational | Rw Double | PI | E | GAMMA | LN2
   deriving (Read, Show)
 
 isPositiveConst :: RealConst -> Bool
 isPositiveConst (Rt r) = r > 0
-isPositiveConst (Raw v) = v > 0
+isPositiveConst (Rw v) = v > 0
 isPositiveConst _ = True
 
 data RealNumber =
@@ -55,7 +55,7 @@ toDouble (Pow v n) = (toDouble v) ^^ n
 
 constToDouble :: RealConst -> Double
 constToDouble (Rt value) = fromRational value
-constToDouble (Raw value) = value
+constToDouble (Rw value) = value
 constToDouble PI = 3.141592653589793238462643383279502884
 constToDouble E = 2.718281828459045235360287471352662498
 constToDouble GAMMA = 0.577215664901532860606512090082402431

@@ -8,7 +8,7 @@ import Data.Char (isSpace, isAlpha, isAlphaNum, isDigit)
 import Text.Read (readMaybe)
 
 mkError :: String -> Result a
-mkError msg = Error ("could not parse integer: " ++ msg)
+mkError msg = Error ("could not parse integer expression: " ++ msg)
 
 type Output = Result (Object IEX, String)
 

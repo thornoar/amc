@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TupleSections #-}
 
 module Main (main) where
 
@@ -11,6 +12,7 @@ import Display.Bundle
 
 import Result
 import Input
+import Data.Char (isSpace, toUpper)
 
 loop :: (ObjectTag, ActionTag) -> [String] -> InputT IO ()
 loop p@(ot, at) history = do
@@ -20,9 +22,12 @@ loop p@(ot, at) history = do
   flip (switch (const $ return ())) minput $ \input -> case input of
     [] -> loop p history
     ('s':'e':'t':' ':rest) ->
-      let mp' = case (split rest '>') of
+      let mp' = case (split (map toUpper . filter (not . isSpace) $ rest) '>') of
             [otstr] -> (,at) <$> readResult otstr
-
+            ["",atstr] -> (ot,) <$> readResult atstr
+            [otstr, atstr] -> (,) <$> readResult otstr <*> readResult atstr
+            _ -> Error "invalid syntax for setting object/action modes"
+       in process (\p' -> loop p' history) mp'
     "help" -> todo
     "exit" -> return ()
     _ -> byTag ot parseResult input $ process $

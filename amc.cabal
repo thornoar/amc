@@ -34,10 +34,13 @@ library amclib
         Object.RealNumber,
         Action.Bundle,
         Action.Simplify,
+        Action.Instances.SimplifyIEX,
+        Action.Instances.SimplifyREX,
         Result,
         Description,
         Parse.Bundle,
         Parse.Instances.ParseIEX,
+        Parse.Instances.ParseREX,
         Display.Bundle,
         Display.Instances.DisplayIEX
     default-language: Haskell2010

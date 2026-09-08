@@ -1,4 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
 module Object.Bundle where
@@ -6,12 +5,13 @@ import Object.RealNumber
 import Description
 
 -- data NumberSystem = ZZ | QQ | RR | Boolean
-
 data ObjectTag = IEX | REX | STR deriving (Read, Show)
 
 instance Description IEX where description _ = "an integer expression"
 instance Description REX where description _ = "a real number expression"
 instance Description STR where description _ = "a string"
+
+instance Description ObjectTag where description _ = "an object tag"
 
 data Object tg where
   -- Integer arithmetic
