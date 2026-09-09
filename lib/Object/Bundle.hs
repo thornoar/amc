@@ -33,8 +33,8 @@ data Object tg where
   RInv :: Object REX -> Object REX
   RProd :: Object REX -> Object REX -> Object REX
   RDiv :: Object REX -> Object REX -> Object REX
-  RPow :: Object REX -> Object REX -> Object REX
   RLog :: Object REX -> Object REX -> Object REX
+  RPow :: Object REX -> Object REX -> Object REX
   RVar :: String -> Object REX
   RApp :: BuiltinFunction -> Object REX -> Object REX
 

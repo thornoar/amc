@@ -41,7 +41,6 @@ library amclib
         Parse.Bundle,
         Parse.Instances.ParseIEX,
         Parse.Instances.ParseREX,
-        Parse.Instances.ParseRealNumber,
         Display.Bundle,
         Display.Instances.DisplayIEX
     default-language: Haskell2010

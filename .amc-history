@@ -1,3 +1,40 @@
+log_3 45
+log_3 4
+set rex > show
+log_3 4
+set rex > show
+3 3
+log_3 3
+x*         4
+x*4
+x * 4
+x * 5
+4/2.2/34*23
+4/2.2/34
+4/2.2
+4/2
+4.223
+4.2
+4
+set rex > show
+gamma
+e
+4/3/5
+set rex > show
+2345/13/233
+2345/13
+4/2
+5.323455432
+3.5
+4
+set rex > show
+4
+set rex > show
+3
+set rex > simpl
+4
+set rex > show
+set REX > Sho
 asdf
 set str > show
 asd

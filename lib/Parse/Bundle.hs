@@ -8,6 +8,7 @@ import Result
 import Description
 
 import qualified Parse.Instances.ParseIEX as PIEX
+import qualified Parse.Instances.ParseREX as PREX
 
 type ParseResult :: ObjectTag -> Constraint
 class ParseResult tg where
@@ -18,6 +19,9 @@ instance {-# OVERLAPPABLE #-} Description tg => ParseResult tg where
 
 instance {-# OVERLAPPING #-} ParseResult IEX where
   parseResult = PIEX.parse
+
+instance {-# OVERLAPPING #-} ParseResult REX where
+  parseResult = PREX.parse
 
 instance {-# OVERLAPPING #-} ParseResult STR where
   parseResult = Content . Raw

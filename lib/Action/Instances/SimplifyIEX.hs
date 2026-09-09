@@ -14,7 +14,10 @@ simplify (ISum e1 e2) = case (simplify e1, simplify e2) of
   (IConst c1, ISum f1 f2) -> ISum f1 (simplify $ ISum (IConst c1) f2)
   (ISum (IConst c1) f2, IConst c2) -> ISum (IConst (c1 + c2)) f2
   (ISum f1 f2, IConst c2) -> ISum f1 (simplify $ ISum f2 (IConst c2))
+  (e1', INeg e2') -> IDiff e1' e2'
+  (INeg e1', e2') -> IDiff e2' e1'
   (e1', e2') -> ISum e1' e2'
+simplify (IDiff e1 e2) = simplify (ISum e1 (INeg e2))
 simplify (IProd e1 e2) = case (simplify e1, simplify e2) of
   (IConst c1, IConst c2) -> IConst (c1 * c2)
   (e1', e2') -> IProd e1' e2'
