@@ -24,7 +24,7 @@ parseSum src = parseProdDivMod src >>= uncurry go
   where
   go :: Object IEX -> String -> Output
   go !obj ('+' : src) = parseProdDivMod src >>= \ (obj', src) -> go (ISum obj obj') src
-  go !obj ('-' : src) = parseProdDivMod src >>= \ (obj', src) -> go (ISum obj (INeg obj')) src
+  go !obj ('-' : src) = parseProdDivMod src >>= \ (obj', src) -> go (IDiff obj obj') src
   go !obj src = Content (obj, src)
   
 parseProdDivMod :: String -> Output

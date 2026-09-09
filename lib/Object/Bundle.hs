@@ -18,7 +18,7 @@ data Object tg where
   IConst :: Integer -> Object IEX
   INeg :: Object IEX -> Object IEX
   ISum :: Object IEX -> Object IEX -> Object IEX
-  -- IDiff :: Object IEX -> Object IEX -> Object IEX
+  IDiff :: Object IEX -> Object IEX -> Object IEX
   IProd :: Object IEX -> Object IEX -> Object IEX
   IDiv :: Object IEX -> Object IEX -> Object IEX
   IMod :: Object IEX -> Object IEX -> Object IEX
@@ -28,15 +28,15 @@ data Object tg where
   -- Real number arithmetic
   RConst :: RealNumber -> Object REX
   RNeg :: Object REX -> Object REX
-  RInv :: Object REX -> Object REX
-  RLn :: Object REX -> Object REX
   RSum :: Object REX -> Object REX -> Object REX
   RDiff :: Object REX -> Object REX -> Object REX
+  RInv :: Object REX -> Object REX
   RProd :: Object REX -> Object REX -> Object REX
   RDiv :: Object REX -> Object REX -> Object REX
   RPow :: Object REX -> Object REX -> Object REX
   RLog :: Object REX -> Object REX -> Object REX
   RVar :: String -> Object REX
+  RApp :: BuiltinFunction -> Object REX -> Object REX
 
   Raw :: String -> Object STR
 
