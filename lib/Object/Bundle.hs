@@ -5,7 +5,10 @@ import Object.RealNumber
 import Description
 
 -- data NumberSystem = ZZ | QQ | RR | Boolean
-data ObjectTag = IEX | REX | STR deriving (Read, Show)
+data ObjectTag = IEX | REX | STR deriving (Read, Show, Enum, Bounded)
+
+allObjectTags :: [ObjectTag]
+allObjectTags = enumFrom minBound
 
 instance Description IEX where description _ = "an integer expression"
 instance Description REX where description _ = "a real number expression"

@@ -13,7 +13,10 @@ import Display.Bundle
 import Parse.Bundle
 import Description
 
-data ActionTag = SIMPL | RETURN | SHOW deriving (Show, Read)
+data ActionTag = SIMPL | RETURN | SHOW | PRINT deriving (Show, Read, Enum, Bounded)
+
+allActionTags :: [ActionTag]
+allActionTags = enumFrom minBound
 instance Description ActionTag where description _ = "an action tag"
 
 type AllActions :: ObjectTag -> Constraint
@@ -43,3 +46,4 @@ action :: AllActions tg =>
 action SIMPL cont obj = cont (simplifyResult obj)
 action RETURN cont obj = cont (Content obj)
 action SHOW cont obj = cont (Content $ Raw (show obj))
+action PRINT cont obj = cont (Raw <$> (displayResult obj))

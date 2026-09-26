@@ -13,6 +13,7 @@ import Display.Bundle
 import Result
 import Input
 import Data.Char (isSpace, toUpper)
+import Data.List (intercalate)
 
 loop :: (ObjectTag, ActionTag) -> [String] -> InputT IO ()
 loop p@(ot, at) history = do
@@ -28,7 +29,10 @@ loop p@(ot, at) history = do
             [otstr, atstr] -> (,) <$> readResult otstr <*> readResult atstr
             _ -> Error "invalid syntax for setting object/action modes"
        in process (\p' -> loop p' history) mp'
-    "help" -> todo
+    "help" -> (>> loop p history) . outputStr . unlines $
+      ("Available objects: " ++ intercalate ", " (map show allObjectTags)) :
+      ("Available actions: " ++ intercalate ", " (map show allActionTags)) :
+      []
     "exit" -> return ()
     _ -> byTag ot parseResult input $ process $
          action at $ process $
