@@ -46,4 +46,4 @@ settings = Settings {
 }
 
 main :: IO ()
-main = runInputT settings (loop (IEX, SHOW) [])
+main = runInputT settings (loop (IEX, PRINT) [])

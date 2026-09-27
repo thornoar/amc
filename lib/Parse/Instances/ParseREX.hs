@@ -4,10 +4,7 @@ module Parse.Instances.ParseREX (parse) where
 import Result
 import Object.Bundle
 import Object.RealNumber
--- import Data.List (elemIndex)
--- import Data.Ratio
-import Data.Char (isAlpha, isAlphaNum, isDigit, isSpace)
--- import Text.Read (readMaybe)
+import Data.Char (isAlpha, isAlphaNum, isDigit)
 
 type Output = Result (Object REX, String)
 
@@ -21,7 +18,6 @@ parse src = parseSum src >>= \ (obj, src) ->
     _ -> mkError $ "unexpected input continuation: `" ++ src ++ "`"
 
 parseSum :: String -> Output
--- parseSum (' ':src) = parseSum src
 parseSum src = parseProdDiv src >>= uncurry go
   where
   go :: Object REX -> String -> Output

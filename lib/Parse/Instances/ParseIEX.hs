@@ -18,7 +18,6 @@ parse src = parseSum (filter (not . isSpace) src) >>= \ (obj, src) ->
     [] -> Content obj
     _ -> mkError $ "unexpected input continuation: `" ++ src ++ "`"
 
-
 parseSum :: String -> Output
 parseSum src = parseProdDivMod src >>= uncurry go
   where
