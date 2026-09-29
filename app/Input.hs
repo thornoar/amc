@@ -1,7 +1,23 @@
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE KindSignatures #-}
 module Input where
 
 import System.Console.Haskeline
 import Result
+-- import Object.Bundle (ObjectTag)
+-- import Data.Kind (Type)
+-- import Action.Bundle (ActionTag)
+import Data.Map (Map, empty, insertWith)
+
+data OptionName = ObjectOpt | ActionOpt
+  deriving (Read, Show, Eq, Ord)
+
+-- type OptionVal :: OptionName -> Type
+-- type family OptionVal a where
+--   OptionVal ObjectOpt = ObjectTag
+--   OptionVal ActionOpt = ActionTag
+
+type Arguments = Map OptionName String
 
 type Process a = InputT IO (Result a)
 
@@ -33,3 +49,12 @@ split (a:as) delim
 
 printError :: String -> InputT IO ()
 printError msg = outputStrLn (color "31" "Error:" ++ " " ++ msg)
+
+insert' :: Ord k => k -> a -> Map k a -> Map k a
+insert' = insertWith (\_ b -> b)
+
+parseArgs :: [String] -> Arguments
+parseArgs [] = empty
+parseArgs ("-a":str:rest) = insert' ActionOpt str $ parseArgs rest
+parseArgs ("-o":str:rest) = insert' ObjectOpt str $ parseArgs rest
+parseArgs (_:rest) = parseArgs rest

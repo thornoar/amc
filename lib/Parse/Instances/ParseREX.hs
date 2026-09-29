@@ -4,7 +4,8 @@ module Parse.Instances.ParseREX (parse) where
 import Result
 import Object.Bundle
 import Object.RealNumber
-import Data.Char (isAlpha, isAlphaNum, isDigit)
+import Data.Char (isAlpha, isAlphaNum, isDigit, toUpper)
+import Text.Read (readMaybe)
 
 type Output = Result (Object REX, String)
 
@@ -67,7 +68,11 @@ parseSimple ('e':rest) = Content (RConst E, rest)
 parseSimple ('p':'i':rest) = Content (RConst PI, rest)
 parseSimple ('g':'a':'m':'m':'a':rest) = Content (RConst GAMMA, rest)
 parseSimple (a : rest)
-  | isAlpha a = let (rname, src) = takeDropWhile isAlphaNum rest in Content (RVar (a : rname), src)
+  | isAlpha a =
+    let (rname, src) = takeDropWhile isAlphaNum rest
+     in case readMaybe (toUpper a : rname) :: Maybe BuiltinFunction of 
+          Just fun -> parseSimple src >>= \ (obj, src) -> Content (RApp fun obj, src)
+          Nothing -> Content (RVar (a : rname), src)
   | isDigit a = let (rconst, src) = takeDropWhile isDigit rest in case src of
       '.':src -> let (rname', src') = takeDropWhile isDigit src in
         (\x -> (RConst (Dbl x), src')) <$> readResult (a : rconst ++ "." ++ rname')

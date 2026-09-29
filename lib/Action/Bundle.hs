@@ -13,7 +13,8 @@ import Display.Bundle
 import Parse.Bundle
 import Description
 
-data ActionTag = SIMPL | RETURN | SHOW | PRINT deriving (Show, Read, Enum, Bounded)
+data ActionTag = SIMPL | RETURN | SHOW | PRINT
+  deriving (Show, Read, Enum, Bounded)
 
 allActionTags :: [ActionTag]
 allActionTags = enumFrom minBound

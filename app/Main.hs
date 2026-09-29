@@ -14,6 +14,10 @@ import Result
 import Input
 import Data.Char (isSpace, toUpper)
 import Data.List (intercalate)
+import System.Environment (getArgs)
+import Data.Maybe (fromMaybe)
+import qualified Data.Map as M
+import Text.Read (readMaybe)
 
 loop :: (ObjectTag, ActionTag) -> [String] -> InputT IO ()
 loop p@(ot, at) history = do
@@ -46,4 +50,8 @@ settings = Settings {
 }
 
 main :: IO ()
-main = runInputT settings (loop (IEX, PRINT) [])
+main = do
+  args <- parseArgs <$> getArgs
+  let ot = fromMaybe IEX $ M.lookup ObjectOpt args >>= (readMaybe . map toUpper)
+      at = fromMaybe SIMPL $ M.lookup ActionOpt args >>= (readMaybe . map toUpper)
+  runInputT settings (loop (ot, at) [])
