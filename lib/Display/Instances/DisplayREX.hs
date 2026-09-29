@@ -40,25 +40,25 @@ assemble (RProd o1 o2) = binop '*' (assemble o1) (assemble o2)
 assemble (RDiv o1 o2) =
   let s1 = assemble o1
       s2 = assemble o2
-      (minx1, _) = smin s1
-      (minx2, miny2) = smin s2
-      (maxx1, _) = smax s1
-      (maxx2, maxy2) = smax s2
-      l1 = maxx1 - minx1 + 1
-      l2 = maxx2 - minx2 + 1
-      h2 = maxy2 - miny2 + 1
-      lmax = maximum $ [3, l1, l2]
-   in place ((lmax - l1) `div` 2) h2 s1
-      ++ placeString 0 (replicate lmax '⎼')
+      (min1x, _) = smin' s1
+      (min2x, min2y) = smin' s2
+      (max1x, _) = smax' s1
+      (max2x, max2y) = smax' s2
+      l1 = max1x - min1x + 1
+      l2 = max2x - min2x + 1
+      h2 = max2y - min2y + 1
+      -- lmax = maximum $ [3, l1, l2]
+      lmax = 2 + max l1 l2
+   in place ((lmax - l1) `div` 2) 1 s1
+      ++ placeString 0 (replicate lmax '⎼') -- '⎼'
       ++ place ((lmax - l2) `div` 2) (-h2) s2
 assemble (RLog o1 o2) =
-  let s1 = assemble o1
-      s2 = assemble o2
-      (minx1, miny1) = smin s1
-      (maxx1, maxy1) = smax s1
-      l1 = maxx1 - minx1 + 1
-      h1 = maxy1 - miny1 + 1
-   in placeString 0 "log" ++ place 3 (-h1) s1 ++ shift (4 + l1) 0 s2
+  let s1 = addParensFor 45 o1 $ assemble o1
+      s2 = addParensFor 45 o2 $ assemble o2
+      (min1x, min1y) = smin' s1
+      (max1x, max1y) = smax s1
+   in placeString 0 "log" ++
+      place 3 (min1y - max1y - 1) s1 ++ shift (5 + max1x - min1x) 0 s2
 assemble (RPow o1 o2) =
   let (s1, s2) = (addParensFor 40 o1 $ assemble o1, assemble o2)
       (max1x, max1y) = smax s1

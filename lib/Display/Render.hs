@@ -35,9 +35,6 @@ renderSingle pref ((x,_,c):rest) = replicate (x - pref) ' ' ++ [c] ++ renderSing
 shift :: Int -> Int -> [Symbol] -> [Symbol]
 shift x y = map $ \ (x',y',c) -> (x'+x, y'+y, c)
 
--- smin :: [Symbol] -> (Int, Int)
--- smin syms = (minimum $ map (select 1) syms, minimum $ map (select 2) syms)
-
 extreme :: (Int -> Int -> Bool) -> [Symbol] -> (Int, Int)
 extreme _ [] = (0,0)
 extreme cmp ((sx,sy,_):rest) = go (sx,sy) rest
@@ -53,27 +50,32 @@ extreme cmp ((sx,sy,_):rest) = go (sx,sy) rest
 smin :: [Symbol] -> (Int, Int)
 smin = extreme (>)
 
+smin' :: [Symbol] -> (Int, Int)
+smin' syms = (minimum $ map (select 1) syms, minimum $ map (select 2) syms)
+
 smax :: [Symbol] -> (Int, Int)
 smax = extreme (<)
--- smax syms = (maximum $ map (select 1) syms, maximum $ map (select 2) syms)
+
+smax' :: Ord b1 => [(b1, b1, b2)] -> (b1, b1)
+smax' syms = (maximum $ map (select 1) syms, maximum $ map (select 2) syms)
 
 placeString :: Int -> String -> [Symbol]
 placeString y = zipWith (\x c -> (x, y, c)) [0..]
 
 place :: Int -> Int -> [Symbol] -> [Symbol]
 place x y syms =
-  let (mx, my) = smin syms
+  let (mx, my) = smin' syms
    in shift (x - mx) (y - my) syms
 
 binop :: Char -> [Symbol] -> [Symbol] -> [Symbol]
 binop c s1 s2 = 
-  let (m1x, _) = smax s1
+  let (m1x, _) = smax' s1
    in s1 ++ [(m1x+2, 0, c)] ++ shift (m1x + 4) 0 s2
 
 addParens :: [Symbol] -> [Symbol]
 addParens syms =
-  let (ax, ay) = smax syms
-      (_, iy) = smin syms
+  let (ax, ay) = smax' syms
+      (_, iy) = smin' syms
    in case ay - iy of
         0 -> (0, iy, '(') : (ax + 2, ay, ')') : shift 1 0 syms
         _ ->
