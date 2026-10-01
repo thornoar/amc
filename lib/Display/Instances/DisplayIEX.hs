@@ -38,7 +38,7 @@ assemble (IDiv o1 o2) =
       h2 = max2y - min2y + 1
       lmax = maximum [3, l1, l2]
    in place ((lmax - l1) `div` 2) 1 s1
-      ++ placeString 0 (replicate lmax '-')
+      ++ placeString 0 (replicate lmax '─') -- '─'
       ++ place ((lmax - l2) `div` 2) (-h2) s2
 assemble (IMod o1 o2) = binop '%' (addParensFor 2 o1 $ assemble o1) (addParensFor 2 o2 $ assemble o2)
 assemble (IPow o1 o2) =

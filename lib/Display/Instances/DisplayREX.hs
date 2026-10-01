@@ -50,7 +50,7 @@ assemble (RDiv o1 o2) =
       -- lmax = maximum $ [3, l1, l2]
       lmax = 2 + max l1 l2
    in place ((lmax - l1) `div` 2) 1 s1
-      ++ placeString 0 (replicate lmax '⎼') -- '⎼'
+      ++ placeString 0 (replicate lmax '⎼') -- '⎼' '─'
       ++ place ((lmax - l2) `div` 2) (-h2) s2
 assemble (RLog o1 o2) =
   let s1 = addParensFor 45 o1 $ assemble o1
