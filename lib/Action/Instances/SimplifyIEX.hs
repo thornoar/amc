@@ -4,6 +4,9 @@ import Object.Bundle
 simplify :: Object IEX -> Object IEX
 simplify = preEval
 
+collectTerms :: Object IEX -> [(String, Integer)]
+collectTerms = undefined
+
 convertTerm :: [(String, Integer)] -> Object IEX
 convertTerm [] = IConst 1
 convertTerm ((name,pow):rest) = IProd (IPow (IVar name) (IConst pow)) $ convertTerm rest
