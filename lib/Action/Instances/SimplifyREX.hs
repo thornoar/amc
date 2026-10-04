@@ -3,4 +3,4 @@ import Object.Bundle
 import Result
 
 simplifyResult :: Object REX -> Result (Object REX)
-simplifyResult = todo
+simplifyResult _ = Error "not implemented yet"

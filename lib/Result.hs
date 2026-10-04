@@ -27,5 +27,5 @@ readResult str = let ma = readMaybe str in case ma of
   Nothing -> Error $ "cannot read `" ++ str ++ "` as " ++ description (proxyOf ma)
   Just a -> Content a
 
-todo :: a
-todo = error "Not implemented yet"
+todo :: Result a
+todo = Error "Not implemented yet"

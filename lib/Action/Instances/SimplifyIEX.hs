@@ -2,7 +2,7 @@ module Action.Instances.SimplifyIEX (simplify) where
 import Object.Bundle
 
 simplify :: Object IEX -> Object IEX
-simplify = normalize . preEval
+simplify = preEval . normalize . preEval
 
 -- collectTerms :: Object IEX -> [(String, Integer)]
 -- collectTerms = undefined
@@ -23,15 +23,15 @@ normalize (IProd o1 o2) =
     | n1 < n2 -> IProd o1' o2'
     | otherwise -> IProd o2' o1'
   (IVar n1, IPow (IVar n2) o3)
-    | n1 == n2 -> IPow (IVar n1) (preEval $ ISum (IConst 1) o3)
+    | n1 == n2 -> IPow (IVar n1) (ISum (IConst 1) o3)
     | n1 < n2 -> IProd o1' o2'
     | otherwise -> IProd o2' o1'
   (IPow (IVar n1) o3, IVar n2)
-    | n1 == n2 -> IPow (IVar n1) (preEval $ ISum (IConst 1) o3)
+    | n1 == n2 -> IPow (IVar n1) (ISum (IConst 1) o3)
     | n1 < n2 -> IProd o1' o2'
     | otherwise -> IProd o2' o1'
   (IPow (IVar n1) o3, IPow (IVar n2) o4)
-    | n1 == n2 -> IPow (IVar n1) (preEval $ ISum o3 o4)
+    | n1 == n2 -> IPow (IVar n1) (ISum o3 o4)
     | n1 < n2 -> IProd o1' o2'
     | otherwise -> IProd o2' o1'
   (_, IProd (IConst v2) o3) -> IProd (IConst v2) (normalize (IProd o1' o3))
@@ -47,16 +47,16 @@ normalize (IDiv o1 o2) =
   (IVar n1, IVar n2)
     | n1 == n2 -> IConst 1
   (IVar n1, IPow (IVar n2) o3)
-    | n1 == n2 -> IPow (IVar n1) (preEval $ IDiff (IConst 1) o3)
+    | n1 == n2 -> IPow (IVar n1) (IDiff (IConst 1) o3)
   (IPow (IVar n1) o3, IVar n2)
-    | n1 == n2 -> IPow (IVar n1) (preEval $ IDiff o3 (IConst 1))
+    | n1 == n2 -> IPow (IVar n1) (IDiff o3 (IConst 1))
   (IPow (IVar n1) o3, IPow (IVar n2) o4)
-    | n1 == n2 -> IPow (IVar n1) (preEval $ IDiff o3 o4)
+    | n1 == n2 -> IPow (IVar n1) (IDiff o3 o4)
   _ -> IDiv o1' o2'
 normalize (IMod o1 o2) = IMod (normalize o1) (normalize o2)
 normalize (IPow o1 o2) =
   let (o1', o2') = (normalize o1, normalize o2) in case (o1', o2') of
-  (IPow o3 o4, _) -> IPow o3 (normalize . preEval $ IProd o4 o2')
+  (IPow o3 o4, _) -> IPow o3 (IProd o4 o2')
   _ -> IPow o1' o2'
 normalize (IVar name) = IVar name
 
