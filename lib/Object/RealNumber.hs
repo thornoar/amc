@@ -5,10 +5,10 @@ module Object.RealNumber where
 -- import Data.Ratio ((%))
 
 data RealNumber = In Integer | Dbl Double | PI | E | GAMMA | LN2
-  deriving (Read, Show)
+  deriving (Eq, Read, Show)
 
 data BuiltinFunction = Exp | Ln | Sin | Cos | Tan | Cot
-  deriving (Show, Read)
+  deriving (Eq, Show, Read)
 
 constToDouble :: RealNumber -> Double
 constToDouble (In value) = fromIntegral value

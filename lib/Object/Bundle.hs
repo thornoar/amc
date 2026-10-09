@@ -44,3 +44,4 @@ data Object tg where
   Raw :: String -> Object STR
 
 deriving instance Show (Object tg)
+deriving instance Eq (Object tg)
