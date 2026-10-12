@@ -78,7 +78,7 @@ preEval (ISum e1 e2) = case (preEval e1, preEval e2) of
 preEval (IProd e1 e2) = case (preEval e1, preEval e2) of
   (f1, IProd f2 f3) -> case combineProd f1 f2 of
     ISum g1 g2 -> IProd g1 (IProd g2 f3)
-    g1 -> IProd g1 f3
+    g1 -> combineProd g1 f3
   (f1, f2) -> combineProd f1 f2
 preEval (IDiv e1 e2) = case (preEval e1, preEval e2) of
   (IConst c1, IConst c2) -> IConst (div c1 c2)
@@ -89,7 +89,6 @@ preEval (IMod e1 e2) = case (preEval e1, preEval e2) of
 preEval (IPow e1 e2) = case (preEval e1, preEval e2) of
   (IConst c1, IConst c2) -> IConst (c1 ^ c2)
   (f1, f2) -> IPow f1 f2
-preEval (IVar nme) = IVar nme
 -- preEval _ = undefined
 
 -- Take two summands and combine them as appropriate
@@ -100,33 +99,33 @@ combineSum (IConst c1) (IConst c2) = IConst $ c1 + c2
 combineSum (IConst c) e = ISum (IConst c) e
 combineSum (INeg e1) (INeg e2) = case (e1, e2) of
   (_, IProd f1 f2)
-    | e1 == f2 -> INeg $ IProd (preEval $ ISum (IConst 1) f1) f2
+    | e1 == f2 -> preEval $ INeg $ IProd (ISum (IConst 1) f1) f2
   (IProd f1 f2, _)
-    | f1 == e2 -> INeg $ IProd (preEval $ ISum (IConst 1) f1) f2
+    | f1 == e2 -> preEval $ INeg $ IProd (ISum (IConst 1) f1) f2
   _
     | e1 == e2 -> INeg $ IProd (IConst 2) e1
   _ -> ISum (INeg e1) (INeg e2)
 combineSum (INeg e1) e2 = case (e1, e2) of
   (_, IProd f1 f2)
-    | e1 == f2 -> IProd (preEval $ ISum (IConst (-1)) f1) f2
+    | e1 == f2 -> preEval $ IProd (ISum (IConst (-1)) f1) f2
   (IProd f1 f2, _)
-    | f1 == e2 -> IProd (preEval $ ISum (IConst 1) (INeg f1)) f2
+    | f1 == e2 -> preEval $ IProd (ISum (IConst 1) (INeg f1)) f2
   _
     | e1 == e2 -> IConst 0
   _ -> ISum (INeg e1) e2
 combineSum e1 (INeg e2) = case (e1, e2) of
   (_, IProd f1 f2)
-    | e1 == f2 -> IProd (preEval $ ISum (IConst 1) (INeg f1)) f2
+    | e1 == f2 -> preEval $ IProd (ISum (IConst 1) (INeg f1)) f2
   (IProd f1 f2, _)
-    | f1 == e2 -> IProd (preEval $ ISum (IConst (-1)) f1) f2
+    | f1 == e2 -> preEval $ IProd (ISum (IConst (-1)) f1) f2
   _
     | e1 == e2 -> IConst 0
   _ -> ISum e1 (INeg e2)
 combineSum e1 e2 = case (e1, e2) of
   (_, IProd f1 f2)
-    | e1 == f2 -> IProd (preEval $ ISum (IConst 1) f1) f2
+    | e1 == f2 -> preEval $ IProd (ISum (IConst 1) f1) f2
   (IProd f1 f2, _)
-    | f1 == e2 -> IProd (preEval $ ISum (IConst 1) f1) f2
+    | f1 == e2 -> preEval $ IProd (ISum (IConst 1) f1) f2
   _
     | e1 == e2 -> IProd (IConst 2) e1
   _ -> ISum e1 e2
@@ -142,6 +141,14 @@ buildPow _ (IConst 0) = IConst 1
 buildPow b (IConst 1) = b
 buildPow b e = IPow b e
 
+-- | Negate a factor, folding the sign into a constant or coefficient.
+negateProd :: Object IEX -> Object IEX
+negateProd (INeg e) = e
+negateProd (IConst c) = IConst (negate c)
+negateProd (IProd (IConst c) r) = IProd (IConst (negate c)) r
+negateProd (ISum e1 e2) = preEval (ISum (negateProd e1) (negateProd e2))
+negateProd e = INeg e
+
 -- | Take two multiplicands and combine them as appropriate
 combineProd :: Object IEX -> Object IEX -> Object IEX
 combineProd (IConst 0) _ = IConst 0
@@ -149,6 +156,8 @@ combineProd _ (IConst 0) = IConst 0
 combineProd (IConst 1) e = e
 combineProd e (IConst 1) = e
 combineProd (IConst c1) (IConst c2) = IConst $ c1 * c2
+combineProd (IConst (-1)) e = negateProd e
+combineProd e (IConst (-1)) = negateProd e
 combineProd (INeg e1) (INeg e2) = combineProd e1 e2
 combineProd (INeg e1) e2 = INeg $ combineProd e1 e2
 combineProd e1 (INeg e2) = INeg $ combineProd e1 e2
