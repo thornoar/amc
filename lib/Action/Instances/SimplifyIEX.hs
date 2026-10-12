@@ -43,96 +43,6 @@ operandKey e = case snd (splitCoeff e) of
   IPow (IVar name) (IConst pow) -> (1, name, pow)
   _ -> (2, "", 0)
 
-preEval :: Object IEX -> Object IEX
-preEval (IConst v) = IConst v
-preEval (IVar name) = IVar name
-preEval (INeg (INeg e)) = preEval e
-preEval (INeg (ISum e1 e2)) = preEval (ISum (INeg e1) (INeg e2))
-preEval (INeg e) = case preEval e of
-  IConst v -> IConst (negate v)
-  IProd (IConst c) r -> IProd (IConst (negate c)) r
-  e' -> INeg e'
-preEval (ISum e1 e2) = case (preEval e1, preEval e2) of
-  (IConst c1, IConst c2) -> IConst (c1 + c2)
-  (IConst c1, ISum (IConst c2) f) -> ISum (IConst $ c1 + c2) f
-  (IConst с, f) -> ISum (IConst c) f
-  (f1, f2)
-    | f1 == f2 -> IProd (IConst 2) f1
-  (f1, IProd f2 f3)
-    | f1 == f3 -> IProd (preEval $ ISum (IConst 1) f2) f3
-    | f1 == f2 -> IProd (preEval $ ISum (IConst 1) f3) f2
-  (IProd f1 f2, f3)
-    | f1 == f3 -> IProd (preEval $ ISum (IConst 1) f2) f3
-    | f2 == f3 -> IProd (preEval $ ISum (IConst 1) f1) f2
-preEval _ = undefined
-
-combineSum :: Object IEX -> Object IEX -> Object IEX
-combineSum = undefined
-
--- preEval :: Object IEX -> Object IEX
--- preEval (IConst v) = IConst v
--- preEval (IVar name) = IVar name
--- preEval (INeg (INeg e)) = preEval e
--- preEval (INeg (ISum e1 e2)) = preEval (ISum (INeg e1) (INeg e2))
--- preEval (INeg e) = case preEval e of
---   IConst v -> IConst (negate v)
---   IProd (IConst c) r -> IProd (IConst (negate c)) r
---   e' -> INeg e'
--- preEval (ISum e1 e2) = mergeTerm (preEval e1) (preEval e2)
--- preEval (IProd e1 e2) = mergeFactor (preEval e1) (preEval e2)
--- preEval (IDiv e1 e2) = case (preEval e1, preEval e2) of
---   (IConst v1, IConst v2) -> IConst (v1 `div` v2)
---   (e1', e2') -> IDiv e1' e2'
--- preEval (IMod e1 e2) = case (preEval e1, preEval e2) of
---   (IConst v1, IConst v2) -> IConst (v1 `mod` v2)
---   (e1', e2') -> IMod e1' e2'
--- preEval (IPow e1 e2) = case (preEval e1, preEval e2) of
---   (IConst v1, IConst v2) -> IConst (v1 ^ v2)
---   (IPow b e, e2') -> preEval (IPow b (preEval (IProd e e2')))
---   (e1', e2') -> IPow e1' e2'
---
--- | Merge an evaluated summand into an evaluated (right-associated) sum.
---
--- The summands arrive in canonical order, so like terms are adjacent: if the
--- head combines with the next summand we keep going, otherwise it stays put.
--- mergeTerm :: Object IEX -> Object IEX -> Object IEX
--- mergeTerm h t
---   | h == IConst 0 = t
---   | t == IConst 0 = h
---   | otherwise = case h of
---       ISum h1 h2 -> mergeTerm h1 (mergeTerm h2 t)
---       _ -> case t of
---         ISum f rest -> maybe (ISum h t) (\c -> mergeTerm c rest) (combineLike h f)
---         _ -> maybe (ISum h t) id (combineLike h t)
---
--- -- | Merge an evaluated factor into an evaluated (right-associated) product.
--- mergeFactor :: Object IEX -> Object IEX -> Object IEX
--- mergeFactor h t
---   | h == IConst 0 = IConst 0
---   | h == IConst 1 = t
---   | t == IConst 1 = h
---   | otherwise = case h of
---       IProd h1 h2 -> mergeFactor h1 (mergeFactor h2 t)
---       _ -> case t of
---         IProd f rest -> maybe (IProd h t) (\c -> mergeFactor c rest) (combineFactors h f)
---         _ -> maybe (IProd h t) id (combineFactors h t)
---
--- -- | Combine two like summands (sharing a base) by adding their coefficients.
--- combineLike :: Object IEX -> Object IEX -> Maybe (Object IEX)
--- combineLike t1 t2 =
---   let (c1, b1) = splitCoeff t1
---       (c2, b2) = splitCoeff t2
---    in if b1 == b2 then Just (buildCoeffTerm b1 (c1 + c2)) else Nothing
---
--- -- | Combine two factors: multiply constants, or add exponents of equal bases.
--- combineFactors :: Object IEX -> Object IEX -> Maybe (Object IEX)
--- combineFactors a b = case (a, b) of
---   (IConst ca, IConst cb) -> Just (IConst (ca * cb))
---   _ ->
---     let (ba, ea) = splitPow a
---         (bb, eb) = splitPow b
---      in if ba == bb then Just (buildPow ba (preEval (ISum ea eb))) else Nothing
-
 -- | Split a summand into its integer coefficient and its remaining base.
 splitCoeff :: Object IEX -> (Integer, Object IEX)
 splitCoeff (IConst c) = (c, IConst 1)
@@ -143,24 +53,106 @@ splitCoeff (IProd e1 e2) =
    in (c1 * c2, productOf [b1, b2])
 splitCoeff e = (1, e)
 
--- buildCoeffTerm :: Object IEX -> Integer -> Object IEX
--- buildCoeffTerm _ 0 = IConst 0
--- buildCoeffTerm (IConst 1) c = IConst c
--- buildCoeffTerm b 1 = b
--- buildCoeffTerm b c = IProd (IConst c) b
-
 -- | Build a right-associated product, dropping multiplicative identity @1@.
 productOf :: [Object IEX] -> Object IEX
 productOf es = case filter (/= IConst 1) es of
   [] -> IConst 1
   fs -> foldr1 IProd fs
 
--- -- | Split a factor into its base and exponent (a bare factor has exponent 1).
--- splitPow :: Object IEX -> (Object IEX, Object IEX)
--- splitPow (IPow b e) = (b, e)
--- splitPow e = (e, IConst 1)
---
--- buildPow :: Object IEX -> Object IEX -> Object IEX
--- buildPow _ (IConst 0) = IConst 1
--- buildPow b (IConst 1) = b
--- buildPow b e = IPow b e
+-- | Simplify an integer expression in canonical order
+preEval :: Object IEX -> Object IEX
+preEval (IConst v) = IConst v
+preEval (IVar name) = IVar name
+preEval (INeg (INeg e)) = preEval e
+preEval (INeg (ISum e1 e2)) = preEval (ISum (INeg e1) (INeg e2))
+preEval (INeg e) = case preEval e of
+  IConst v -> IConst (negate v)
+  IProd (IConst c) r -> IProd (IConst (negate c)) r
+  e' -> INeg e'
+preEval (ISum e1 e2) = case (preEval e1, preEval e2) of
+  (f1, ISum f2 f3) -> case combineSum f1 f2 of
+    ISum g1 g2 -> ISum g1 (ISum g2 f3)
+    IConst 0 -> f3
+    g1 -> ISum g1 f3
+  (f1, f2) -> combineSum f1 f2
+preEval (IProd e1 e2) = case (preEval e1, preEval e2) of
+  (f1, IProd f2 f3) -> case combineProd f1 f2 of
+    ISum g1 g2 -> IProd g1 (IProd g2 f3)
+    g1 -> IProd g1 f3
+  (f1, f2) -> combineProd f1 f2
+preEval (IDiv e1 e2) = case (preEval e1, preEval e2) of
+  (IConst c1, IConst c2) -> IConst (div c1 c2)
+  (f1, f2) -> IDiv f1 f2
+preEval (IMod e1 e2) = case (preEval e1, preEval e2) of
+  (IConst c1, IConst c2) -> IConst (mod c1 c2)
+  (f1, f2) -> IMod f1 f2
+preEval (IPow e1 e2) = case (preEval e1, preEval e2) of
+  (IConst c1, IConst c2) -> IConst (c1 ^ c2)
+  (f1, f2) -> IPow f1 f2
+preEval (IVar nme) = IVar nme
+-- preEval _ = undefined
+
+-- Take two summands and combine them as appropriate
+combineSum :: Object IEX -> Object IEX -> Object IEX
+combineSum (IConst 0) e = e
+combineSum e (IConst 0) = e
+combineSum (IConst c1) (IConst c2) = IConst $ c1 + c2
+combineSum (IConst c) e = ISum (IConst c) e
+combineSum (INeg e1) (INeg e2) = case (e1, e2) of
+  (_, IProd f1 f2)
+    | e1 == f2 -> INeg $ IProd (preEval $ ISum (IConst 1) f1) f2
+  (IProd f1 f2, _)
+    | f1 == e2 -> INeg $ IProd (preEval $ ISum (IConst 1) f1) f2
+  _
+    | e1 == e2 -> INeg $ IProd (IConst 2) e1
+  _ -> ISum (INeg e1) (INeg e2)
+combineSum (INeg e1) e2 = case (e1, e2) of
+  (_, IProd f1 f2)
+    | e1 == f2 -> IProd (preEval $ ISum (IConst (-1)) f1) f2
+  (IProd f1 f2, _)
+    | f1 == e2 -> IProd (preEval $ ISum (IConst 1) (INeg f1)) f2
+  _
+    | e1 == e2 -> IConst 0
+  _ -> ISum (INeg e1) e2
+combineSum e1 (INeg e2) = case (e1, e2) of
+  (_, IProd f1 f2)
+    | e1 == f2 -> IProd (preEval $ ISum (IConst 1) (INeg f1)) f2
+  (IProd f1 f2, _)
+    | f1 == e2 -> IProd (preEval $ ISum (IConst (-1)) f1) f2
+  _
+    | e1 == e2 -> IConst 0
+  _ -> ISum e1 (INeg e2)
+combineSum e1 e2 = case (e1, e2) of
+  (_, IProd f1 f2)
+    | e1 == f2 -> IProd (preEval $ ISum (IConst 1) f1) f2
+  (IProd f1 f2, _)
+    | f1 == e2 -> IProd (preEval $ ISum (IConst 1) f1) f2
+  _
+    | e1 == e2 -> IProd (IConst 2) e1
+  _ -> ISum e1 e2
+
+-- | Split a factor into its base and exponent (a bare factor has exponent 1).
+splitPow :: Object IEX -> (Object IEX, Object IEX)
+splitPow (IPow b e) = (b, e)
+splitPow e = (e, IConst 1)
+
+-- | Build a power, dropping the trivial exponents 0 and 1.
+buildPow :: Object IEX -> Object IEX -> Object IEX
+buildPow _ (IConst 0) = IConst 1
+buildPow b (IConst 1) = b
+buildPow b e = IPow b e
+
+-- | Take two multiplicands and combine them as appropriate
+combineProd :: Object IEX -> Object IEX -> Object IEX
+combineProd (IConst 0) _ = IConst 0
+combineProd _ (IConst 0) = IConst 0
+combineProd (IConst 1) e = e
+combineProd e (IConst 1) = e
+combineProd (IConst c1) (IConst c2) = IConst $ c1 * c2
+combineProd (INeg e1) (INeg e2) = combineProd e1 e2
+combineProd (INeg e1) e2 = INeg $ combineProd e1 e2
+combineProd e1 (INeg e2) = INeg $ combineProd e1 e2
+combineProd e1 e2 = case (splitPow e1, splitPow e2) of
+  ((b1, p1), (b2, p2))
+    | b1 == b2 -> buildPow b1 (preEval $ ISum p1 p2)
+  _ -> IProd e1 e2
