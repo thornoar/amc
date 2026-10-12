@@ -48,9 +48,26 @@ preEval (IConst v) = IConst v
 preEval (IVar name) = IVar name
 preEval (INeg (INeg e)) = preEval e
 preEval (INeg (ISum e1 e2)) = preEval (ISum (INeg e1) (INeg e2))
-preEval (INeg e) = INeg (preEval e)
-preEval (ISum e1 e2) = undefined
+preEval (INeg e) = case preEval e of
+  IConst v -> IConst (negate v)
+  IProd (IConst c) r -> IProd (IConst (negate c)) r
+  e' -> INeg e'
+preEval (ISum e1 e2) = case (preEval e1, preEval e2) of
+  (IConst c1, IConst c2) -> IConst (c1 + c2)
+  (IConst c1, ISum (IConst c2) f) -> ISum (IConst $ c1 + c2) f
+  (IConst с, f) -> ISum (IConst c) f
+  (f1, f2)
+    | f1 == f2 -> IProd (IConst 2) f1
+  (f1, IProd f2 f3)
+    | f1 == f3 -> IProd (preEval $ ISum (IConst 1) f2) f3
+    | f1 == f2 -> IProd (preEval $ ISum (IConst 1) f3) f2
+  (IProd f1 f2, f3)
+    | f1 == f3 -> IProd (preEval $ ISum (IConst 1) f2) f3
+    | f2 == f3 -> IProd (preEval $ ISum (IConst 1) f1) f2
 preEval _ = undefined
+
+combineSum :: Object IEX -> Object IEX -> Object IEX
+combineSum = undefined
 
 -- preEval :: Object IEX -> Object IEX
 -- preEval (IConst v) = IConst v
