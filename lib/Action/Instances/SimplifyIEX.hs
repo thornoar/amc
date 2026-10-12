@@ -16,22 +16,22 @@ simplify = preEval . rearrange
 rearrange :: Object IEX -> Object IEX
 rearrange (IConst v) = IConst v
 rearrange (IVar name) = IVar name
-rearrange (INeg e) = INeg (rearrange e)
+rearrange (INeg e) = INeg (simplify e)
 rearrange (ISum e1 e2) = foldr1 ISum $ sortBy (comparing operandKey) $ summands (ISum e1 e2)
 rearrange (IProd e1 e2) = foldr1 IProd $ sortBy (comparing operandKey) $ factors (IProd e1 e2)
-rearrange (IDiv e1 e2) = IDiv (rearrange e1) (rearrange e2)
-rearrange (IMod e1 e2) = IMod (rearrange e1) (rearrange e2)
-rearrange (IPow e1 e2) = IPow (rearrange e1) (rearrange e2)
+rearrange (IDiv e1 e2) = IDiv (simplify e1) (simplify e2)
+rearrange (IMod e1 e2) = IMod (simplify e1) (simplify e2)
+rearrange (IPow e1 e2) = IPow (simplify e1) (simplify e2)
 
 -- | Flatten the top-level sum spine and rearrange every summand.
 summands :: Object IEX -> [Object IEX]
 summands (ISum e1 e2) = summands e1 ++ summands e2
-summands e = [rearrange e]
+summands e = [simplify e]
 
 -- | Flatten the top-level product spine and rearrange every factor.
 factors :: Object IEX -> [Object IEX]
 factors (IProd e1 e2) = factors e1 ++ factors e2
-factors e = [rearrange e]
+factors e = [simplify e]
 
 -- | Sort key placing constants first, then variable powers (by variable name,
 -- then by exponent), then everything else. The coefficient of a term is
