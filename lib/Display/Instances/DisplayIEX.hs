@@ -8,7 +8,7 @@ display = render . assemble
 addParensFor :: Int -> Object IEX -> [Symbol] -> [Symbol]
 addParensFor p (ISum _ _)
   | p > 0 = addParens
-addParensFor p (IDiff _ _)
+addParensFor p (INeg _)
   | p > 0 = addParens
 addParensFor p (IProd _ _ )
   | p > 1 = addParens
@@ -22,9 +22,9 @@ addParensFor _ _ = id
 
 assemble :: Object IEX -> [Symbol]
 assemble (IConst v) = placeString 0 (show v)
-assemble (INeg obj) = addParensFor 1 obj $ (-1,0,'-') : assemble obj
+assemble (INeg obj) = addParensFor 1 obj $ (0,0,'-') : (shift 1 0 $ assemble obj)
+assemble (ISum o1 (INeg o2)) = binop '-' (assemble o1) (addParensFor 1 o2 $ assemble o2)
 assemble (ISum o1 o2) = binop '+' (assemble o1) (assemble o2)
-assemble (IDiff o1 o2) = binop '-' (assemble o1) (assemble o2)
 assemble (IProd o1 o2) = binop '*' (addParensFor 1 o1 $ assemble o1) (addParensFor 1 o2 $ assemble o2)
 assemble (IDiv o1 o2) =
   let s1 = assemble o1

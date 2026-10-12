@@ -21,7 +21,7 @@ data Object tg where
   IConst :: Integer -> Object IEX
   INeg :: Object IEX -> Object IEX
   ISum :: Object IEX -> Object IEX -> Object IEX
-  IDiff :: Object IEX -> Object IEX -> Object IEX
+  -- IDiff :: Object IEX -> Object IEX -> Object IEX
   IProd :: Object IEX -> Object IEX -> Object IEX
   IDiv :: Object IEX -> Object IEX -> Object IEX
   IMod :: Object IEX -> Object IEX -> Object IEX

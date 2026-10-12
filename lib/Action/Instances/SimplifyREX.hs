@@ -153,7 +153,7 @@ preEval (RSum e1 e2) = do
     (RSum (RConst c1) f2, RConst c2)
       | isNumericRN c1 && isNumericRN c2 -> Content (RSum (RConst (addRN c1 c2)) f2)
     (RSum f1 f2, RConst c2)
-      | isNumericRN c2 -> preEval (RSum f1 (RSum f2 (RConst c2)))
+      | isNumericRN c2 -> preEval (RSum (RSum f1 (RConst c2)) f2)
     (e1'', RNeg e2'') -> Content (RDiff e1'' e2'')
     (RNeg e1'', e2'') -> Content (RDiff e2'' e1'')
     (e1'', e2'')
