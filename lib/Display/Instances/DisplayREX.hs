@@ -18,7 +18,7 @@ assembleRN LN2 = placeString 0 "ln(2)"
 addParensFor :: Int -> Object REX -> [Symbol] -> [Symbol]
 addParensFor p (RSum _ _)
   | p > 0 = addParens
-addParensFor p (RDiff _ _)
+addParensFor p (RNeg _)
   | p > 0 = addParens
 addParensFor p (RProd _ _ )
   | p > 1 = addParens
@@ -32,9 +32,9 @@ addParensFor _ _ = id
 
 assemble :: Object REX -> [Symbol]
 assemble (RConst v) = assembleRN v
-assemble (RNeg obj) = (0,0,'-') : shift 1 0 (assemble obj)
+assemble (RNeg obj) = addParensFor 1 obj $ (0,0,'-') : shift 1 0 (assemble obj)
+assemble (RSum o1 (RNeg o2)) = binop '-' (assemble o1) (addParensFor 1 o2 $ assemble o2)
 assemble (RSum o1 o2) = binop '+' (assemble o1) (assemble o2)
-assemble (RDiff o1 o2) = binop '-' (assemble o1) (assemble o2)
 assemble (RInv obj) = assemble (RDiv (RConst (In 1)) obj)
 assemble (RProd o1 o2) = binop '*' (assemble o1) (assemble o2)
 assemble (RDiv o1 o2) =

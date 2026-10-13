@@ -32,7 +32,6 @@ data Object tg where
   RConst :: RealNumber -> Object REX
   RNeg :: Object REX -> Object REX
   RSum :: Object REX -> Object REX -> Object REX
-  RDiff :: Object REX -> Object REX -> Object REX
   RInv :: Object REX -> Object REX
   RProd :: Object REX -> Object REX -> Object REX
   RDiv :: Object REX -> Object REX -> Object REX

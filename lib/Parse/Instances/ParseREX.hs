@@ -24,7 +24,7 @@ parseSum src = parseProdDiv src >>= uncurry go
   go :: Object REX -> String -> Output
   go !obj (' ' : src) = go obj src
   go !obj ('+' : src) = parseProdDiv src >>= \ (obj', src) -> go (RSum obj obj') src
-  go !obj ('-' : src) = parseProdDiv src >>= \ (obj', src) -> go (RDiff obj obj') src
+  go !obj ('-' : src) = parseProdDiv src >>= \ (obj', src) -> go (RSum obj (RNeg obj')) src
   go !obj src = Content (obj, src)
   
 parseProdDiv :: String -> Output

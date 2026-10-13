@@ -2,6 +2,7 @@ module Action.Instances.SimplifyREX (simplifyResult) where
 import Object.Bundle
 import Object.RealNumber
 import Result
+import Control.Monad ((<=<))
 import Data.List (sortBy)
 import Data.Ord (comparing)
 
@@ -11,7 +12,7 @@ import Data.Ord (comparing)
 -- symbolic constants @PI@, @E@, @GAMMA@ and @LN2@ are treated like variables,
 -- so that e.g. @pi + pi@ becomes @2*pi@ rather than a decimal approximation.
 simplifyResult :: Object REX -> Result (Object REX)
-simplifyResult obj = fmap finalize (preEval (rearrange (expandDiffs obj)))
+simplifyResult = preEval <=< rearrange
 
 addRN :: RealNumber -> RealNumber -> RealNumber
 addRN (In a) (In b) = In (a + b)
@@ -91,43 +92,33 @@ isOneObj :: Object REX -> Bool
 isOneObj (RConst c) = isOneRN c
 isOneObj _ = False
 
--- | Rewrite every subtraction as a sum with a negated right operand, so that
--- the rest of the pipeline only has to deal with sums and products.
-expandDiffs :: Object REX -> Object REX
-expandDiffs (RDiff e1 e2) = RSum (expandDiffs e1) (RNeg (expandDiffs e2))
-expandDiffs (RSum e1 e2) = RSum (expandDiffs e1) (expandDiffs e2)
-expandDiffs (RNeg e) = RNeg (expandDiffs e)
-expandDiffs (RProd e1 e2) = RProd (expandDiffs e1) (expandDiffs e2)
-expandDiffs (RDiv e1 e2) = RDiv (expandDiffs e1) (expandDiffs e2)
-expandDiffs (RInv e) = RInv (expandDiffs e)
-expandDiffs (RLog e1 e2) = RLog (expandDiffs e1) (expandDiffs e2)
-expandDiffs (RPow e1 e2) = RPow (expandDiffs e1) (expandDiffs e2)
-expandDiffs (RApp f e) = RApp f (expandDiffs e)
-expandDiffs e = e
-
 -- | Put an expression into a canonical order: sums and products are
 -- right-associated and their operands are sorted by 'operandKey'.
-rearrange :: Object REX -> Object REX
-rearrange (RConst v) = RConst v
-rearrange (RVar name) = RVar name
-rearrange (RNeg e) = RNeg (rearrange e)
-rearrange (RSum e1 e2) = foldr1 RSum $ sortBy (comparing operandKey) $ summands (RSum e1 e2)
-rearrange (RDiff e1 e2) = rearrange (RSum e1 (RNeg e2))
-rearrange (RProd e1 e2) = foldr1 RProd $ sortBy (comparing operandKey) $ factors (RProd e1 e2)
-rearrange (RDiv e1 e2) = RDiv (rearrange e1) (rearrange e2)
-rearrange (RInv e) = RInv (rearrange e)
-rearrange (RLog e1 e2) = RLog (rearrange e1) (rearrange e2)
-rearrange (RPow e1 e2) = RPow (rearrange e1) (rearrange e2)
-rearrange (RApp f e) = RApp f (rearrange e)
+rearrange :: Object REX -> Result (Object REX)
+rearrange (RConst v) = Content (RConst v)
+rearrange (RVar name) = Content (RVar name)
+rearrange (RNeg e) = RNeg <$> simplifyResult e
+rearrange (RSum e1 e2) = do
+  es <- summands (RSum e1 e2)
+  Content $ foldr1 RSum $ sortBy (comparing operandKey) es
+rearrange (RProd e1 e2) = do
+  es <- factors (RProd e1 e2)
+  Content $ foldr1 RProd $ sortBy (comparing operandKey) es
+rearrange (RDiv e1 e2) = RDiv <$> simplifyResult e1 <*> simplifyResult e2
+rearrange (RInv e) = RInv <$> simplifyResult e
+rearrange (RLog e1 e2) = RLog <$> simplifyResult e1 <*> simplifyResult e2
+rearrange (RPow e1 e2) = RPow <$> simplifyResult e1 <*> simplifyResult e2
+rearrange (RApp f e) = RApp f <$> simplifyResult e
 
-summands :: Object REX -> [Object REX]
-summands (RSum e1 e2) = summands e1 ++ summands e2
-summands (RDiff e1 e2) = summands e1 ++ map RNeg (summands e2)
-summands e = [rearrange e]
+-- | Flatten the top-level sum spine and simplify every summand.
+summands :: Object REX -> Result [Object REX]
+summands (RSum e1 e2) = (++) <$> summands e1 <*> summands e2
+summands e = (: []) <$> simplifyResult e
 
-factors :: Object REX -> [Object REX]
-factors (RProd e1 e2) = factors e1 ++ factors e2
-factors e = [rearrange e]
+-- | Flatten the top-level product spine and simplify every factor.
+factors :: Object REX -> Result [Object REX]
+factors (RProd e1 e2) = (++) <$> factors e1 <*> factors e2
+factors e = (: []) <$> simplifyResult e
 
 -- | Sort key placing numeric constants first, then variables and symbolic
 -- constants (by name, then by exponent), then everything else.
@@ -176,12 +167,8 @@ buildCoeffTerm b c = RProd (RConst c) b
 preEval :: Object REX -> Result (Object REX)
 preEval (RConst v) = Content (RConst v)
 preEval (RVar name) = Content (RVar name)
-preEval (RApp fun e) = preEval e >>= \e' -> case e' of
-  RConst c | isNumericRN c -> RConst <$> applyRN fun c
-  _ -> Content (RApp fun e')
 preEval (RNeg (RNeg e)) = preEval e
 preEval (RNeg (RSum e1 e2)) = preEval (RSum (RNeg e1) (RNeg e2))
-preEval (RNeg (RDiff e1 e2)) = preEval (RSum (RNeg e1) e2)
 preEval (RNeg e) = preEval e >>= \e' -> Content $ case e' of
   RConst c | isNumericRN c -> RConst (negRN c)
   RProd (RConst c) r | isNumericRN c -> RProd (RConst (negRN c)) r
@@ -195,7 +182,6 @@ preEval (RSum e1 e2) = do
       RConst c | isZeroRN c -> Content f3
       g1 -> Content (RSum g1 f3)
     _ -> Content (combineSum f1 f2)
-preEval (RDiff e1 e2) = preEval (RSum e1 (RNeg e2))
 preEval (RProd e1 e2) = do
   f1 <- preEval e1
   f2 <- preEval e2
@@ -236,6 +222,9 @@ preEval (RPow e1 e2) = do
     (_, RConst c) | isOneRN c -> Content f1
     (RPow b p, _) -> preEval (RPow b (RProd p f2))
     _ -> Content (RPow f1 f2)
+preEval (RApp fun e) = preEval e >>= \e' -> case e' of
+  RConst c | isNumericRN c -> RConst <$> applyRN fun c
+  _ -> Content (RApp fun e')
 
 -- | Take two summands and combine them as appropriate.
 combineSum :: Object REX -> Object REX -> Object REX
@@ -285,33 +274,3 @@ combineProd e1 e2
         ((b1, p1), (b2, p2))
           | b1 == b2 -> buildPow b1 <$> preEval (RSum p1 p2)
         _ -> Content (RProd e1 e2)
-
--- | Render internal sums back as subtractions where possible.
-finalize :: Object REX -> Object REX
-finalize (RSum e1 e2) = rebuildSum (map finalize (flattenSum (RSum e1 e2)))
-finalize (RDiff e1 e2) = finalize (RSum e1 (RNeg e2))
-finalize (RNeg e) = case finalize e of
-  RConst c | isNumericRN c -> RConst (negRN c)
-  RProd (RConst c) r | isNumericRN c -> RProd (RConst (negRN c)) r
-  e' -> RNeg e'
-finalize (RProd e1 e2) = RProd (finalize e1) (finalize e2)
-finalize (RDiv e1 e2) = RDiv (finalize e1) (finalize e2)
-finalize (RInv e) = RInv (finalize e)
-finalize (RLog e1 e2) = RLog (finalize e1) (finalize e2)
-finalize (RPow e1 e2) = RPow (finalize e1) (finalize e2)
-finalize (RApp f e) = RApp f (finalize e)
-finalize e = e
-
-flattenSum :: Object REX -> [Object REX]
-flattenSum (RSum e1 e2) = flattenSum e1 ++ flattenSum e2
-flattenSum e = [e]
-
-rebuildSum :: [Object REX] -> Object REX
-rebuildSum [] = RConst (In 0)
-rebuildSum (t : ts) = foldl step t ts
-  where
-    step acc (RNeg t') = RDiff acc t'
-    step acc (RConst c) | isNumericRN c && constToDouble c < 0 = RDiff acc (RConst (negRN c))
-    step acc (RProd (RConst c) r)
-      | isNumericRN c && constToDouble c < 0 = RDiff acc (RProd (RConst (negRN c)) r)
-    step acc s = RSum acc s
