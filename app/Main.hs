@@ -16,6 +16,7 @@ import System.Environment (getArgs)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 import Text.Read (readMaybe)
+import Data.List.Unique (uniq)
 
 handle :: IIO () -> IIO ()
 handle act = let lp = handleInterrupt lp act in lp
@@ -42,7 +43,7 @@ loop p@(ot, at) = do
     "?" -> helpAction
     "exit" -> return ()
     _ -> parseByTag ot input $ process $
-      \ (obj, rest) -> flip process (parseActionChain at rest) $
+      \ (obj, rest) -> flip process (fmap uniq $ parseActionChain at rest) $
         \ats -> actionChain ats (loop p) obj
 
 settings :: Settings IO

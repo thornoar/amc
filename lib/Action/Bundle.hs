@@ -16,7 +16,7 @@ import Input (IIO, printError, removePrefix, splitPair, guessElement)
 import Data.Char (isSpace)
 
 data ActionTag = SIMPL | RETURN | SHOW | PRINT
-  deriving (Show, Read, Enum, Bounded)
+  deriving (Show, Read, Eq, Enum, Bounded)
 
 allActionTags :: [ActionTag]
 allActionTags = enumFrom minBound
