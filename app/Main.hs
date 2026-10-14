@@ -19,11 +19,14 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 import Text.Read (readMaybe)
 
+handle :: InputT IO () -> InputT IO ()
+handle act = let lp = handleInterrupt lp act in lp
+
 loop :: (ObjectTag, ActionTag) -> [String] -> InputT IO ()
 loop p@(ot, at) history = do
   minput <- getColoredInputLine $ getPrompt '#' (show ot) (show at)
   let process :: (a -> InputT IO ()) -> Result a -> InputT IO ()
-      process = switch ((>> loop p history) . printError)
+      process = switch $ (>> loop p history) . printError
   flip (switch (const $ return ())) minput $ \input -> case input of
     [] -> loop p history
     ('s':'e':'t':' ':rest) ->
@@ -32,7 +35,7 @@ loop p@(ot, at) history = do
             ["",atstr] -> (ot,) <$> readResult atstr
             [otstr, atstr] -> (,) <$> readResult otstr <*> readResult atstr
             _ -> Error "invalid syntax for setting object/action modes"
-       in process (\p' -> loop p' history) mp'
+       in process (\p' -> handle $ loop p' history) mp'
     "help" -> (>> loop p history) . outputStr . unlines $
       ("Available objects: " ++ intercalate ", " (map show allObjectTags)) :
       ("Available actions: " ++ intercalate ", " (map show allActionTags)) :
@@ -53,5 +56,5 @@ main :: IO ()
 main = do
   args <- parseArgs <$> getArgs
   let ot = fromMaybe IEX $ M.lookup ObjectOpt args >>= (readMaybe . map toUpper)
-      at = fromMaybe SIMPL $ M.lookup ActionOpt args >>= (readMaybe . map toUpper)
-  runInputT settings (loop (ot, at) [])
+      at = fromMaybe RETURN $ M.lookup ActionOpt args >>= (readMaybe . map toUpper)
+  runInputT settings $ withInterrupt $ handle $ loop (ot, at) []

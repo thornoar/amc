@@ -57,5 +57,5 @@ parseSimple (a : rest)
   | isDigit a = let (rconst, src) = takeDropWhile isDigit rest in case readMaybe (a : rconst) of
       Just num -> Content (IConst num, src)
       Nothing -> mkError $ "could not read `" ++ (a : rconst) ++ "` as an integer constant"
-  | otherwise = mkError $ "unexpected character: `" ++ show a ++ "`"
+  | otherwise = mkError $ "unexpected character: " ++ show a
 parseSimple [] = mkError "expected an expression"

@@ -77,7 +77,7 @@ parseSimple (a : rest)
       '.':src -> let (rname', src') = takeDropWhile isDigit src in
         (\x -> (RConst (Dbl x), src')) <$> readResult (a : rconst ++ "." ++ rname')
       _ -> (\x -> (RConst (In x), src)) <$> readResult (a : rconst)
-  | otherwise = mkError $ "unexpected character: `" ++ show a ++ "`"
+  | otherwise = mkError $ "unexpected character: " ++ show a
 parseSimple [] = mkError "expected an expression"
 
 -- parseRN :: String -> Result RealNumber
