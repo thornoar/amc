@@ -11,19 +11,24 @@ import Description
 
 import qualified Display.Instances.DisplayIEX as DIEX
 import qualified Display.Instances.DisplayREX as DREX
+import Input (IIO)
+import System.Console.Haskeline (outputStrLn)
+
+returnAfter :: (a -> IIO b) -> (a -> c) -> a -> IIO c
+returnAfter act transf a = act a >> return (transf a)
 
 type DisplayResult :: ObjectTag -> Constraint
 class DisplayResult tg where
-  displayResult :: Object tg -> Result String
+  displayResult :: Object tg -> IIO (Result (Object tg))
 
 instance {-# OVERLAPPABLE #-} Description tg => DisplayResult tg where
-  displayResult obj = Error $ (description (proxyOf obj)) ++ " cannot be printed"
+  displayResult obj = return . Error $ (description (proxyOf obj)) ++ " cannot be printed"
 
 instance {-# OVERLAPPING #-} DisplayResult IEX where
-  displayResult = Content . DIEX.display
+  displayResult = returnAfter (outputStrLn . DIEX.display) Content
 
 instance {-# OVERLAPPING #-} DisplayResult REX where
-  displayResult = Content . DREX.display
+  displayResult = returnAfter (outputStrLn . DREX.display) Content
 
 instance {-# OVERLAPPING #-} DisplayResult STR where
-  displayResult (Raw str) = Content str
+  displayResult (Raw str) = returnAfter outputStrLn (Content . Raw) str

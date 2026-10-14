@@ -7,8 +7,6 @@ import System.Console.Haskeline
 
 import Action.Bundle
 import Object.Bundle
-import Parse.Bundle
-import Display.Bundle
 
 import Result
 import Input
@@ -19,31 +17,33 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 import Text.Read (readMaybe)
 
-handle :: InputT IO () -> InputT IO ()
+handle :: IIO () -> IIO ()
 handle act = let lp = handleInterrupt lp act in lp
 
-loop :: (ObjectTag, ActionTag) -> [String] -> InputT IO ()
-loop p@(ot, at) history = do
+loop :: (ObjectTag, ActionTag) -> IIO ()
+loop p@(ot, at) = do
   minput <- getColoredInputLine $ getPrompt '#' (show ot) (show at)
-  let process :: (a -> InputT IO ()) -> Result a -> InputT IO ()
-      process = switch $ (>> loop p history) . printError
+  let process :: (a -> IIO ()) -> Result a -> IIO ()
+      process = switch $ (>> loop p) . printError
+      helpAction = (>> loop p) . outputStr . unlines $
+        ("Available objects: " ++ intercalate ", " (map show allObjectTags)) :
+        ("Available actions: " ++ intercalate ", " (map show allActionTags)) :
+        []
   flip (switch (const $ return ())) minput $ \input -> case input of
-    [] -> loop p history
+    [] -> loop p
     ('s':'e':'t':' ':rest) ->
-      let mp' = case (split (map toUpper . filter (not . isSpace) $ rest) '>') of
-            [otstr] -> (,at) <$> readResult otstr
-            ["",atstr] -> (ot,) <$> readResult atstr
-            [otstr, atstr] -> (,) <$> readResult otstr <*> readResult atstr
+      let mp' = case (split (filter (not . isSpace) rest) '>') of
+            [otstr] -> (,at) <$> guessElement otstr allObjectTags
+            ["",atstr] -> (ot,) <$> guessElement atstr allActionTags
+            [otstr, atstr] -> (,) <$> guessElement otstr allObjectTags <*> guessElement atstr allActionTags
             _ -> Error "invalid syntax for setting object/action modes"
-       in process (\p' -> handle $ loop p' history) mp'
-    "help" -> (>> loop p history) . outputStr . unlines $
-      ("Available objects: " ++ intercalate ", " (map show allObjectTags)) :
-      ("Available actions: " ++ intercalate ", " (map show allActionTags)) :
-      []
+       in process (\p' -> handle $ loop p') mp'
+    "help" -> helpAction
+    "?" -> helpAction
     "exit" -> return ()
-    _ -> byTag ot parseResult input $ process $
-         action at $ process $
-         process ((>> loop p history) . outputStrLn) . displayResult
+    _ -> parseByTag ot input $ process $
+      \ (obj, rest) -> flip process (parseActionChain at rest) $
+        \ats -> actionChain ats (loop p) obj
 
 settings :: Settings IO
 settings = Settings {
@@ -55,6 +55,6 @@ settings = Settings {
 main :: IO ()
 main = do
   args <- parseArgs <$> getArgs
-  let ot = fromMaybe IEX $ M.lookup ObjectOpt args >>= (readMaybe . map toUpper)
-      at = fromMaybe RETURN $ M.lookup ActionOpt args >>= (readMaybe . map toUpper)
-  runInputT settings $ withInterrupt $ handle $ loop (ot, at) []
+  let ot = fromMaybe REX $ M.lookup ObjectOpt args >>= (readMaybe . map toUpper)
+      at = fromMaybe SIMPL $ M.lookup ActionOpt args >>= (readMaybe . map toUpper)
+  runInputT settings $ withInterrupt $ handle $ loop (ot, at)

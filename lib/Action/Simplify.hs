@@ -10,16 +10,17 @@ import Description
 
 import qualified Action.Instances.SimplifyIEX as SIEX
 import qualified Action.Instances.SimplifyREX as SREX
+import Input (IIO)
 
 type SimplifyResult :: ObjectTag -> Constraint
 class SimplifyResult tg where
-  simplifyResult :: Object tg -> Result (Object tg)
+  simplifyResult :: Object tg -> IIO (Result (Object tg))
 
 instance {-# OVERLAPPABLE #-} Description tg => SimplifyResult tg where
-  simplifyResult obj = Error $ (description (proxyOf obj)) ++ " cannot be simplified"
+  simplifyResult obj = return . Error $ (description (proxyOf obj)) ++ " cannot be simplified"
 
 instance {-# OVERLAPPING #-} SimplifyResult IEX where
-  simplifyResult = Content . SIEX.simplify
+  simplifyResult = return . Content . SIEX.simplify
 
 instance {-# OVERLAPPING #-} SimplifyResult REX where
-  simplifyResult = SREX.simplifyResult
+  simplifyResult = return . SREX.simplifyResult

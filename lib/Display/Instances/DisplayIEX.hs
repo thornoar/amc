@@ -1,4 +1,4 @@
-module Display.Instances.DisplayIEX where
+module Display.Instances.DisplayIEX (display) where
 import Object.Bundle
 import Display.Render
 

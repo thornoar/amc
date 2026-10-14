@@ -4,22 +4,24 @@ module Input where
 
 import System.Console.Haskeline
 import Result
--- import Object.Bundle (ObjectTag)
--- import Data.Kind (Type)
--- import Action.Bundle (ActionTag)
 import Data.Map (Map, empty, insertWith)
+import Data.Char (toUpper)
+import Data.List (isPrefixOf)
 
 data OptionName = ObjectOpt | ActionOpt
   deriving (Read, Show, Eq, Ord)
 
--- type OptionVal :: OptionName -> Type
--- type family OptionVal a where
---   OptionVal ObjectOpt = ObjectTag
---   OptionVal ActionOpt = ActionTag
-
 type Arguments = Map OptionName String
 
-type Process a = InputT IO (Result a)
+type Process a = IIO (Result a)
+
+type IIO = InputT IO
+
+removePrefix :: (a -> Bool) -> [a] -> [a]
+removePrefix test (c:rest)
+  | test c = removePrefix test rest
+  | otherwise = c:rest
+removePrefix _ [] = []
 
 color :: String -> String -> String
 color typ str = "\ESC[" ++ typ ++ "m" ++ str ++ "\ESC[0m" -- ]]
@@ -47,7 +49,13 @@ split (a:as) delim
       (bs:bss) -> (a:bs) : bss
       [] -> [[a]]
 
-printError :: String -> InputT IO ()
+splitPair :: Eq a => (a -> Bool) -> [a] -> ([a],[a])
+splitPair _ [] = ([],[])
+splitPair test (a:rest)
+  | test a = ([], rest)
+  | otherwise = let (lft, rgt) = splitPair test rest in (a : lft, rgt)
+
+printError :: String -> IIO ()
 printError msg = outputStrLn (color "31" "Error:" ++ " " ++ msg)
 
 insert' :: Ord k => k -> a -> Map k a -> Map k a
@@ -58,3 +66,13 @@ parseArgs [] = empty
 parseArgs ("-a":str:rest) = insert' ActionOpt str $ parseArgs rest
 parseArgs ("-o":str:rest) = insert' ObjectOpt str $ parseArgs rest
 parseArgs (_:rest) = parseArgs rest
+
+guessElement :: Show a => String -> [a] -> Result a
+guessElement str lst = foldl go (Error $ "could not match prefix: `" ++ capStr ++ "`") lst
+  where
+    capStr = map toUpper str
+    go :: Show a => Result a -> a -> Result a
+    go prev@(Content _) _ = prev
+    go prev a
+      | capStr `isPrefixOf` (map toUpper $ show a) = Content a
+      | otherwise = prev

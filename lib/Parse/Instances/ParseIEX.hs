@@ -4,7 +4,7 @@ module Parse.Instances.ParseIEX (parse) where
 
 import Object.Bundle
 import Result
-import Data.Char (isSpace, isAlpha, isAlphaNum, isDigit)
+import Data.Char (isAlpha, isAlphaNum, isDigit)
 import Text.Read (readMaybe)
 
 mkError :: String -> Result a
@@ -12,16 +12,14 @@ mkError msg = Error ("could not parse integer expression: " ++ msg)
 
 type Output = Result (Object IEX, String)
 
-parse :: String -> Result (Object IEX)
-parse src = parseSum (filter (not . isSpace) src) >>= \ (obj, src) ->
-  case src of
-    [] -> Content obj
-    _ -> mkError $ "unexpected input continuation: `" ++ src ++ "`"
+parse :: String -> Output
+parse = parseSum
 
 parseSum :: String -> Output
 parseSum src = parseProdDivMod src >>= uncurry go
   where
   go :: Object IEX -> String -> Output
+  go !obj (' ' : src) = go obj src
   go !obj ('+' : src) = parseProdDivMod src >>= \ (obj', src) -> go (ISum obj obj') src
   go !obj ('-' : src) = parseProdDivMod src >>= \ (obj', src) -> go (ISum obj (INeg obj')) src
   go !obj src = Content (obj, src)
@@ -30,6 +28,7 @@ parseProdDivMod :: String -> Output
 parseProdDivMod src = parseExponent src >>= uncurry go
   where
   go :: Object IEX -> String -> Output
+  go !obj (' ' : src) = go obj src
   go !obj ('*' : src) = parseExponent src >>= \ (obj', src) -> go (IProd obj obj') src
   go !obj ('/' : src) = parseExponent src >>= \ (obj', src) -> go (IDiv obj obj') src
   go !obj ('%' : src) = parseExponent src >>= \ (obj', src) -> go (IMod obj obj') src
@@ -37,9 +36,11 @@ parseProdDivMod src = parseExponent src >>= uncurry go
 
 parseExponent :: String -> Output
 parseExponent src = parseSimple src >>= \ (obj, src) ->
-  case src of
-    '^' : src -> parseExponent src >>= \ (obj', src) -> Content (IPow obj obj', src)
-    _ -> Content (obj, src)
+  let go :: String -> Output
+      go (' ' : src) = go src
+      go ('^' : src) = parseExponent src >>= \ (obj', src) -> Content (IPow obj obj', src)
+      go src = Content (obj, src)
+   in go src
 
 takeDropWhile :: (a -> Bool) -> [a] -> ([a], [a])
 takeDropWhile _ [] = ([], [])
@@ -48,6 +49,7 @@ takeDropWhile cond lst@(a : rest)
   | otherwise = ([], lst)
 
 parseSimple :: String -> Output
+parseSimple (' ' : src) = parseSimple src
 parseSimple ('-' : src) = parseSimple src >>= \ (obj, src) -> Content (INeg obj, src)
 parseSimple ('(' : src) = parseSum src >>= \ (obj, src) -> case src of
   ')' : src -> Content (obj, src)

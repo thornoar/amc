@@ -12,11 +12,8 @@ type Output = Result (Object REX, String)
 mkError :: String -> Result a
 mkError msg = Error ("could not parse real expression: " ++ msg)
 
-parse :: String -> Result (Object REX)
-parse src = parseSum src >>= \ (obj, src) ->
-  case src of
-    [] -> Content obj
-    _ -> mkError $ "unexpected input continuation: `" ++ src ++ "`"
+parse :: String -> Output
+parse = parseSum
 
 parseSum :: String -> Output
 parseSum src = parseProdDiv src >>= uncurry go
