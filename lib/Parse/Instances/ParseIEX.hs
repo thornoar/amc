@@ -12,8 +12,10 @@ mkError msg = Error ("could not parse integer expression: " ++ msg)
 
 type Output = Result (Object IEX, String)
 
-parse :: String -> Output
-parse = parseSum
+parse :: String -> Result (Object IEX)
+parse str = (parseSum str) >>= \ (obj, rest) -> case rest of
+  [] -> Content obj
+  _ -> mkError $ "unexpected continuation: `" ++ rest ++ "`"
 
 parseSum :: String -> Output
 parseSum src = parseProdDivMod src >>= uncurry go

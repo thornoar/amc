@@ -11,40 +11,42 @@ import Object.Bundle
 import Result
 import Input
 import Data.Char (isSpace, toUpper)
-import Data.List (intercalate)
+import Data.List (intercalate, intersperse)
 import System.Environment (getArgs)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 import Text.Read (readMaybe)
 import Data.List.Unique (uniq)
+import Control.Monad (when)
 
 handle :: IIO () -> IIO ()
 handle act = let lp = handleInterrupt lp act in lp
 
-loop :: (ObjectTag, ActionTag) -> IIO ()
-loop p@(ot, at) = do
-  minput <- getColoredInputLine $ getPrompt '#' (show ot) (show at)
+loop :: Bool -> (ObjectTag, [ActionTag]) -> IIO ()
+loop pm p@(ot, ats) = do
+  -- minput <- getColoredInputLine $ getPrompt '#' (show ot) (show at)
+  when pm $ outputStrLn $ "(" ++ color "34" "object" ++ ": " ++ color "33" (show ot) ++ "; " ++ color "34" "actions" ++ ": " ++ color "33" (concat (intersperse " | " $ map show ats)) ++ ")"
+  minput <- getColoredInputLine $ "#####: "
   let process :: (a -> IIO ()) -> Result a -> IIO ()
-      process = switch $ (>> loop p) . printError
-      helpAction = (>> loop p) . outputStr . unlines $
+      process = switch $ (>> loop True p) . printError
+      helpAction = (>> loop True p) . outputStr . unlines $
         ("Available objects: " ++ intercalate ", " (map show allObjectTags)) :
         ("Available actions: " ++ intercalate ", " (map show allActionTags)) :
         []
   flip (switch (const $ return ())) minput $ \input -> case input of
-    [] -> loop p
+    [] -> loop False p
     ('s':'e':'t':' ':rest) ->
-      let mp' = case (split (filter (not . isSpace) rest) '>') of
-            [otstr] -> (,at) <$> guessElement otstr allObjectTags
-            ["",atstr] -> (ot,) <$> guessElement atstr allActionTags
-            [otstr, atstr] -> (,) <$> guessElement otstr allObjectTags <*> guessElement atstr allActionTags
-            _ -> Error "invalid syntax for setting object/action modes"
-       in process (\p' -> handle $ loop p') mp'
+      let mp' = case (splitPair (== '|') rest) of
+            (otstr, "") -> (,ats) <$> guessElement otstr allObjectTags
+            ("", atstr) -> (ot,) <$> parseActionChain atstr
+            (otstr, atstr) -> (,) <$> guessElement otstr allObjectTags <*> parseActionChain atstr
+       in process (\p' -> handle $ loop True p') mp'
     "help" -> helpAction
     "?" -> helpAction
     "exit" -> return ()
-    _ -> parseByTag ot input $ process $
-      \ (obj, rest) -> flip process (fmap uniq $ parseActionChain at rest) $
-        \ats -> actionChain ats (loop p) obj
+    _ -> let (objstr, pipes) = splitPair (== '|') input
+          in parseByTag ot objstr $ process $
+            \obj -> process (\ats' -> actionChain ats' (loop True p) obj) (fmap (uniq . intersperse' PRINT . (ats ++)) $ parseActionChain pipes)
 
 settings :: Settings IO
 settings = Settings {
@@ -58,4 +60,4 @@ main = do
   args <- parseArgs <$> getArgs
   let ot = fromMaybe REX $ M.lookup ObjectOpt args >>= (readMaybe . map toUpper)
       at = fromMaybe SIMPL $ M.lookup ActionOpt args >>= (readMaybe . map toUpper)
-  runInputT settings $ withInterrupt $ handle $ loop (ot, at)
+  runInputT settings $ withInterrupt $ handle $ loop True (ot, [at])

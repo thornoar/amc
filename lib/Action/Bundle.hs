@@ -12,8 +12,9 @@ import Action.Simplify
 import Display.Bundle
 import Parse.Bundle
 import Description
-import Input (IIO, printError, removePrefix, splitPair, guessElement)
+import Input (IIO, printError, splitPair, guessElement)
 import Data.Char (isSpace)
+-- import Data.Char (isSpace)
 
 data ActionTag = SIMPL | RETURN | SHOW | PRINT
   deriving (Show, Read, Eq, Enum, Bounded)
@@ -21,15 +22,23 @@ data ActionTag = SIMPL | RETURN | SHOW | PRINT
 allActionTags :: [ActionTag]
 allActionTags = enumFrom minBound
 
-parseActionChain :: ActionTag -> String -> Result [ActionTag]
-parseActionChain ini str = case removePrefix isSpace str of
-  [] -> Content [ini, PRINT]
-  c:rest -> let (atstr, other) = splitPair isSpace rest in case guessElement atstr allActionTags of
-    Content at -> case c of
-      '@' -> fmap (at:) $ parseActionChain ini other
-      '>' -> fmap (ini:) $ parseActionChain at other
-      _ -> Error $ "unrecognized pipe symbol: " ++ show c
-    Error msg -> Error ("processing characters left after parsing: " ++ msg)
+vacuum :: String -> String
+vacuum = filter (not . isSpace)
+
+parseActionChain :: String -> Result [ActionTag]
+parseActionChain = go . vacuum
+  where
+    go [] = Content []
+    go str = let (cur, rest) = splitPair (== '|') str
+              in (:) <$> guessElement cur allActionTags <*> go rest
+
+-- parseActionChain str = case removePrefix isSpace str of
+--   [] -> Content []
+--   c:rest -> let (atstr, other) = splitPair isSpace (removePrefix isSpace rest) in case guessElement atstr allActionTags of
+--     Content at -> case c of
+--       '|' -> fmap (at:) $ parseActionChain other
+--       _ -> Error $ "unrecognized pipe symbol: " ++ show c
+--     Error msg -> Error ("processing characters left after parsing: " ++ msg)
 
 instance Description ActionTag where description _ = "an action tag"
 
@@ -46,11 +55,11 @@ parseByTag ::
   ObjectTag ->
   -- (forall (tg :: ObjectTag). ParseResult tg => String -> Result (Object tg, String)) ->
   String ->
-  (forall tg. AllActions tg => Result (Object tg, String) -> b) ->
+  (forall tg. AllActions tg => Result (Object tg) -> b) ->
   b
-parseByTag IEX a cont = cont (parseResult a :: Result (Object IEX, String))
-parseByTag REX a cont = cont (parseResult a :: Result (Object REX, String))
-parseByTag STR a cont = cont (parseResult a :: Result (Object STR, String))
+parseByTag IEX a cont = cont (parseResult a :: Result (Object IEX))
+parseByTag REX a cont = cont (parseResult a :: Result (Object REX))
+parseByTag STR a cont = cont (parseResult a :: Result (Object STR))
 
 action :: AllActions tg =>
   ActionTag ->

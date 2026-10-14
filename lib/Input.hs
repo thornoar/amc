@@ -76,3 +76,7 @@ guessElement str lst = foldl go (Error $ "could not match prefix: `" ++ capStr +
     go prev a
       | capStr `isPrefixOf` (map toUpper $ show a) = Content a
       | otherwise = prev
+
+intersperse' :: Eq a => a -> [a] -> [a]
+intersperse' a [] = [a]
+intersperse' a (a':rest) = a : a' : intersperse' a rest
