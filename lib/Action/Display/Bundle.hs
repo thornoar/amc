@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Display.Bundle (DisplayResult, displayResult) where
+module Action.Display.Bundle (DisplayResult, displayResult) where
 
 import Object.Bundle
 import Data.Kind (Constraint)
@@ -9,8 +9,8 @@ import Data.Kind (Constraint)
 import Result
 import Description
 
-import qualified Display.Instances.DisplayIEX as DIEX
-import qualified Display.Instances.DisplayREX as DREX
+import qualified Action.Display.Instances.IEX as DIEX
+import qualified Action.Display.Instances.REX as DREX
 import Input (IIO)
 import System.Console.Haskeline (outputStrLn)
 

@@ -8,8 +8,8 @@ module Action.Bundle where
 import Object.Bundle
 import Result
 import Data.Kind (Constraint)
-import Action.Simplify
-import Display.Bundle
+import Action.Simplify.Bundle
+import Action.Display.Bundle
 import Parse.Bundle
 import Description
 import Input (IIO, printError, splitPair, guessElement)

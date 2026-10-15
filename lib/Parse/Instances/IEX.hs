@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# LANGUAGE BangPatterns #-}
-module Parse.Instances.ParseIEX (parse) where
+module Parse.Instances.IEX (parse) where
 
 import Object.Bundle
 import Result

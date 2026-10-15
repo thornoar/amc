@@ -1,6 +1,6 @@
-module Display.Instances.DisplayREX (display) where
+module Action.Display.Instances.REX (display) where
 import Object.Bundle
-import Display.Render
+import Action.Display.Render
 import Object.RealNumber
 import Data.Char (toLower)
 

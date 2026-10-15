@@ -1,4 +1,4 @@
-module Display.Render where
+module Action.Display.Render where
 import Data.List (partition, sortBy)
 import Data.Ord (comparing, Down (..))
 

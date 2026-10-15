@@ -1,6 +1,6 @@
-module Display.Instances.DisplayIEX (display) where
+module Action.Display.Instances.IEX (display) where
 import Object.Bundle
-import Display.Render
+import Action.Display.Render
 
 display :: Object IEX -> String
 display = render . assemble

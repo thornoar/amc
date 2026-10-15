@@ -1,15 +1,15 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Action.Simplify (SimplifyResult, simplifyResult) where
+module Action.Simplify.Bundle (SimplifyResult, simplifyResult) where
 
 import Object.Bundle
 import Result (Result (..))
 import Data.Kind (Constraint)
 import Description
 
-import qualified Action.Instances.SimplifyIEX as SIEX
-import qualified Action.Instances.SimplifyREX as SREX
+import qualified Action.Simplify.Instances.IEX as SIEX
+import qualified Action.Simplify.Instances.REX as SREX
 import Input (IIO)
 
 type SimplifyResult :: ObjectTag -> Constraint

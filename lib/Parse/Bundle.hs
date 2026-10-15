@@ -9,8 +9,8 @@ import Data.Kind (Constraint)
 import Result
 import Description
 
-import qualified Parse.Instances.ParseIEX as PIEX
-import qualified Parse.Instances.ParseREX as PREX
+import qualified Parse.Instances.IEX as PIEX
+import qualified Parse.Instances.REX as PREX
 
 type ParseResult :: ObjectTag -> Constraint
 class ParseResult tg where

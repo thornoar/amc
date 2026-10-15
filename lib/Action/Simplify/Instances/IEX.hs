@@ -1,4 +1,4 @@
-module Action.Instances.SimplifyIEX (simplify) where
+module Action.Simplify.Instances.IEX (simplify) where
 import Object.Bundle
 import Data.List (sortBy)
 import Data.Ord (comparing)

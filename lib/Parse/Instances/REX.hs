@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
-module Parse.Instances.ParseREX (parse) where
+module Parse.Instances.REX (parse) where
 import Result
 import Object.Bundle
 import Object.RealNumber

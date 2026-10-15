@@ -1,4 +1,4 @@
-module Action.Instances.SimplifyREX (simplifyResult) where
+module Action.Simplify.Instances.REX (simplifyResult) where
 import Object.Bundle
 import Object.RealNumber
 import Result
