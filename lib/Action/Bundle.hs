@@ -14,9 +14,10 @@ import Parse.Bundle
 import Description
 import Input (IIO, printError, splitPair, guessElement)
 import Data.Char (isSpace)
+import Action.Substitute.Bundle
 -- import Data.Char (isSpace)
 
-data ActionTag = SIMPL | RETURN | SHOW | PRINT
+data ActionTag = SIMPL | SUBS | RETURN | SHOW | PRINT
   deriving (Show, Read, Eq, Enum, Bounded)
 
 allActionTags :: [ActionTag]
@@ -50,7 +51,8 @@ type family AllActions tg where
       Description tg,
       DisplayResult tg,
       ParseResult tg,
-      SimplifyResult tg
+      SimplifyResult tg,
+      SubstituteResult tg
     )
 
 parseByTag ::
@@ -69,6 +71,7 @@ action :: AllActions tg =>
   Object tg ->
   IIO a
 action SIMPL cont obj = simplifyResult obj >>= cont
+action SUBS cont obj = substituteResult obj >>= cont
 action RETURN cont obj = cont (Content obj)
 action SHOW cont obj = cont (Content $ Raw (show obj))
 action PRINT cont obj = displayResult obj >>= cont

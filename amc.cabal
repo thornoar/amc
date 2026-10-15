@@ -35,6 +35,8 @@ library amclib
         Action.Simplify.Instances.IEX,
         Action.Simplify.Instances.REX,
         Action.Substitute.Bundle,
+        Action.Substitute.Instances.IEX,
+        Action.Substitute.Instances.REX,
         Result,
         Description,
         Parse.Bundle,

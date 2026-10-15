@@ -25,7 +25,7 @@ handle act = let lp = handleInterrupt lp act in lp
 loop :: Bool -> (ObjectTag, [ActionTag]) -> IIO ()
 loop pm p@(ot, ats) = do
   when pm $ outputStrLn $ "(" ++ color "34" "object" ++ ": " ++ color "33" (show ot) ++ "; " ++ color "34" "actions" ++ ": " ++ color "33" (concat (intersperse " | " $ map show ats)) ++ ")"
-  minput <- getColoredInputLine $ "#####: "
+  minput <- getColoredInputLine $ replicate (promptLength - 2) '#' ++ ": "
   let process :: (a -> IIO ()) -> Result a -> IIO ()
       process = switch $ (>> loop True p) . printError
       helpAction = (>> loop True p) . outputStr . unlines $

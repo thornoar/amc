@@ -27,7 +27,7 @@ color :: String -> String -> String
 color typ str = "\ESC[" ++ typ ++ "m" ++ str ++ "\ESC[0m" -- ]]
 
 promptLength :: Int
-promptLength = 20
+promptLength = 10
 
 getPrompt :: Char -> String -> String -> String
 getPrompt rep body1 body2 = "\ESC[0m(" ++ color "33" body1 ++ " -> " ++ color "33" body2 ++ ") " ++ replicate n rep ++ ": \ESC[34m" -- ]]
