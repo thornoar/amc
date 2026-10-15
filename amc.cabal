@@ -22,13 +22,6 @@ library amclib
     import:           common
     hs-source-dirs:
         lib,
-        -- lib/**/*
-        -- lib/actions,
-        -- -- lib/actions/spec,
-        -- lib/object,
-        -- lib/parse,
-        -- lib/print,
-        -- lib/spec
     exposed-modules:
         Input,
         Object.Bundle,
@@ -55,8 +48,6 @@ library amclib
 executable amc
     import:           common
     main-is:          Main.hs
-    -- other-modules:    Input
-    -- other-extensions:
     build-depends:
         base ^>=4.20.2.0,
         haskeline,

@@ -10,7 +10,7 @@ import Object.Bundle
 
 import Result
 import Input
-import Data.Char (isSpace, toUpper)
+import Data.Char (toUpper)
 import Data.List (intercalate, intersperse)
 import System.Environment (getArgs)
 import Data.Maybe (fromMaybe)
@@ -38,15 +38,17 @@ loop pm p@(ot, ats) = do
     ('s':'e':'t':' ':rest) ->
       let mp' = case (splitPair (== '|') rest) of
             (otstr, "") -> (,ats) <$> guessElement otstr allObjectTags
-            ("", atstr) -> (ot,) <$> parseActionChain atstr
-            (otstr, atstr) -> (,) <$> guessElement otstr allObjectTags <*> parseActionChain atstr
+            ("", atstr) -> (ot,) <$> parseActionChain [] atstr
+            (otstr, atstr) -> (,) <$> guessElement otstr allObjectTags <*> parseActionChain [] atstr
        in process (\p' -> handle $ loop True p') mp'
     "help" -> helpAction
     "?" -> helpAction
     "exit" -> return ()
     _ -> let (objstr, pipes) = splitPair (== '|') input
           in parseByTag ot objstr $ process $
-            \obj -> process (\ats' -> actionChain ats' (loop True p) obj) (fmap (uniq . intersperse' PRINT . (ats ++)) $ parseActionChain pipes)
+            \obj -> process
+              (\ats' -> actionChain ats' (loop True p) obj)
+              (fmap (uniq . intersperse' PRINT) $ parseActionChain ats pipes)
 
 settings :: Settings IO
 settings = Settings {

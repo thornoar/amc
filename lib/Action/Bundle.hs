@@ -25,12 +25,14 @@ allActionTags = enumFrom minBound
 vacuum :: String -> String
 vacuum = filter (not . isSpace)
 
-parseActionChain :: String -> Result [ActionTag]
-parseActionChain = go . vacuum
+parseActionChain :: [ActionTag] -> String -> Result [ActionTag]
+parseActionChain ats = fmap (uncurry (++)) . go ats . vacuum
   where
-    go [] = Content []
-    go str = let (cur, rest) = splitPair (== '|') str
-              in (:) <$> guessElement cur allActionTags <*> go rest
+    go :: [ActionTag] -> String -> Result ([ActionTag], [ActionTag])
+    go acc "" = Content (acc, [])
+    go acc str = case splitPair (== '|') str of
+      ('<':cur, rest) -> guessElement cur allActionTags >>= \at -> go (at : acc) rest
+      (cur, rest) -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement cur allActionTags
 
 -- parseActionChain str = case removePrefix isSpace str of
 --   [] -> Content []
