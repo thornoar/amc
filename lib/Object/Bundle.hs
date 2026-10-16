@@ -10,9 +10,14 @@ data ObjectTag = IEX | REX | STR deriving (Read, Show, Enum, Bounded)
 allObjectTags :: [ObjectTag]
 allObjectTags = enumFrom minBound
 
+showObjectTag :: ObjectTag -> String
+showObjectTag IEX = "integer expression"
+showObjectTag REX = "real expression"
+showObjectTag STR = "raw string"
+
 instance Description IEX where description _ = "an integer expression"
 instance Description REX where description _ = "a real number expression"
-instance Description STR where description _ = "a string"
+instance Description STR where description _ = "a raw string"
 
 instance Description ObjectTag where description _ = "an object tag"
 
@@ -21,7 +26,6 @@ data Object tg where
   IConst :: Integer -> Object IEX
   INeg :: Object IEX -> Object IEX
   ISum :: Object IEX -> Object IEX -> Object IEX
-  -- IDiff :: Object IEX -> Object IEX -> Object IEX
   IProd :: Object IEX -> Object IEX -> Object IEX
   IDiv :: Object IEX -> Object IEX -> Object IEX
   IMod :: Object IEX -> Object IEX -> Object IEX

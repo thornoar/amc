@@ -1,6 +1,6 @@
 module Action.Substitute.Instances.REX (substituteResult) where
 
-import Control.Monad (foldM)
+import Control.Monad (foldM, unless)
 import Data.Char (isSpace)
 import Data.List (nub)
 
@@ -8,19 +8,23 @@ import Input (IIO, getColoredInputLine, promptLength)
 import Object.Bundle
 import Parse.Instances.REX (parse)
 import Result
+import System.Console.Haskeline (outputStr)
 
 substituteResult :: Object REX -> IIO (Result (Object REX))
-substituteResult obj = foldM step (Content obj) (nub (variables obj))
-  where
-    step (Error msg) _ = return (Error msg)
-    step (Content e) name = do
-      let prstr = " " ++ name ++ " = "
-      minput <- getColoredInputLine $ replicate (promptLength - length prstr) '#' ++ prstr
-      case minput of
-        Error msg -> return (Error msg)
-        Content str
-          | all isSpace str -> return (Content e)
-          | otherwise -> return (replace e name <$> parse str)
+substituteResult obj = do
+  let vars = nub (variables obj)
+      step (Error msg) _ = return (Error msg)
+      step (Content e) name = do
+        let prstr = " " ++ name ++ " = "
+        minput <- getColoredInputLine $ replicate (promptLength - length prstr) '#' ++ prstr
+        case minput of
+          Error msg -> return (Error msg)
+          Content str
+            | all isSpace str -> return (Content e)
+            | otherwise -> return (replace e name <$> parse str)
+  res <- foldM step (Content obj) vars
+  unless (null vars) (outputStr "\n")
+  return res
 
 variables :: Object REX -> [String]
 variables (RConst _) = []

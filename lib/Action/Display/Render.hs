@@ -15,7 +15,7 @@ render syms =
       rows = map (fmap $ renderSingle (-1) . sortBy (comparing $ select 1)) symsSplitSorted
    in case rows of
         [] -> ""
-        ((y,_):_) -> "\n" ++ makeBlock y rows
+        ((y,_):_) -> makeBlock y rows
 
 splitList :: Eq b => (a -> b) -> [a] -> [(b, [a])]
 splitList _ [] = []

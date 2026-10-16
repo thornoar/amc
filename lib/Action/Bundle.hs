@@ -17,8 +17,14 @@ import Data.Char (isSpace)
 import Action.Substitute.Bundle
 -- import Data.Char (isSpace)
 
-data ActionTag = SIMPL | SUBS | RETURN | SHOW | PRINT
+data ActionTag = SIMPL | SUBS | SHOW | PRINT
   deriving (Show, Read, Eq, Enum, Bounded)
+
+showActionTag :: ActionTag -> String
+showActionTag SIMPL = "simplify"
+showActionTag SUBS = "substitute"
+showActionTag SHOW = "show"
+showActionTag PRINT = "print"
 
 allActionTags :: [ActionTag]
 allActionTags = enumFrom minBound
@@ -72,7 +78,6 @@ action :: AllActions tg =>
   IIO a
 action SIMPL cont obj = simplifyResult obj >>= cont
 action SUBS cont obj = substituteResult obj >>= cont
-action RETURN cont obj = cont (Content obj)
 action SHOW cont obj = cont (Content $ Raw (show obj))
 action PRINT cont obj = displayResult obj >>= cont
 
