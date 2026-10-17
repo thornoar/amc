@@ -39,9 +39,10 @@ parseActionChain ats = fmap (uncurry (++)) . go ats . vacuum
   where
     go :: [ActionTag] -> String -> Result ([ActionTag], [ActionTag])
     go acc "" = Content (acc, [])
-    go acc str = case splitPair (== '|') str of
-      ('<':cur, rest) -> guessElement showActionTag cur allActionTags >>= \at -> go (at : acc) rest
-      (cur, rest) -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement showActionTag cur allActionTags
+    go acc str = case splitPair (`elem` ['|', '#', '@']) str of
+      (Just '#', cur, rest) -> guessElement showActionTag cur allActionTags >>= \at -> go (at : acc) rest
+      (Just '@', cur, rest) -> guessElement showActionTag cur allActionTags >>= \at -> go [at] rest
+      (Just '|', cur, rest) -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement showActionTag cur allActionTags
 
 -- parseActionChain str = case removePrefix isSpace str of
 --   [] -> Content []

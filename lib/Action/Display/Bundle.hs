@@ -31,4 +31,4 @@ instance {-# OVERLAPPING #-} DisplayResult REX where
   displayResult = returnAfter (outputStrLn . DREX.display) Content
 
 instance {-# OVERLAPPING #-} DisplayResult STR where
-  displayResult (Raw str) = returnAfter outputStrLn (Content . Raw) str
+  displayResult (Raw str) = returnAfter (outputStrLn . ("\n " ++)) (Content . Raw) str

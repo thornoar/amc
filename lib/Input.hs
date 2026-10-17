@@ -49,11 +49,11 @@ split (a:as) delim
       (bs:bss) -> (a:bs) : bss
       [] -> [[a]]
 
-splitPair :: Eq a => (a -> Bool) -> [a] -> ([a],[a])
-splitPair _ [] = ([],[])
+splitPair :: Eq a => (a -> Bool) -> [a] -> (Maybe a, [a],[a])
+splitPair _ [] = (Nothing, [],[])
 splitPair test (a:rest)
-  | test a = ([], rest)
-  | otherwise = let (lft, rgt) = splitPair test rest in (a : lft, rgt)
+  | test a = (Just a, [], rest)
+  | otherwise = let (r, lft, rgt) = splitPair test rest in (r, a : lft, rgt)
 
 printError :: String -> IIO ()
 printError msg = outputStrLn (color "31" "Error:" ++ " " ++ msg)

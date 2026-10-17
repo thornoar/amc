@@ -25,13 +25,13 @@ handle act = let lp = handleInterrupt lp act in lp
 loop :: Bool -> (ObjectTag, [ActionTag]) -> IIO ()
 loop pm p@(ot, ats) = do
   let actstr = if null ats then color "33" "none" else (concat (intersperse " > " $ map (color "33" . showActionTag) ats))
-  when pm $ outputStrLn $ "(" ++ color "34" "object" ++ ": " ++ color "33" (showObjectTag ot) ++ "; " ++ color "34" "actions" ++ ": " ++ actstr ++ ")"
+  when pm $ outputStrLn $ "\n(" ++ color "34" "object" ++ ": " ++ color "33" (showObjectTag ot) ++ "; " ++ color "34" "actions" ++ ": " ++ actstr ++ ")"
   minput <- getColoredInputLine $ replicate (promptLength - 2) '#' ++ ": "
   let process :: (a -> IIO ()) -> Result a -> IIO ()
       process = switch $ (>> loop True p) . printError
       helpAction = (>> loop True p) . outputStrLn . unlines $
-        ("\nAvailable objects: " ++ intercalate ", " (map show allObjectTags)) :
-        ("Available actions: " ++ intercalate ", " (map show allActionTags)) :
+        ("\nAvailable objects: " ++ intercalate ", " (map showObjectTag allObjectTags)) :
+        ("Available actions: " ++ intercalate ", " (map showActionTag allActionTags)) :
         []
   flip (switch (const $ return ())) minput $ \input -> case input of
     [] -> loop False p
@@ -47,7 +47,7 @@ loop pm p@(ot, ats) = do
     "exit" -> return ()
     _ -> let (objstr, pipes) = splitPair (== '|') input
           in parseByTag ot objstr $ process $
-            \obj -> outputStr "\n" >> process
+            \obj -> process
               (\ats' -> actionChain ats' (loop True p) obj)
               (fmap (uniq . intersperse' PRINT) $ parseActionChain ats pipes)
 
