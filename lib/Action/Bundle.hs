@@ -15,9 +15,10 @@ import Description
 import Input (IIO, printError, splitPair, guessElement)
 import Data.Char (isSpace)
 import Action.Substitute.Bundle
+import Action.Convert.Bundle
 -- import Data.Char (isSpace)
 
-data ActionTag = SIMPL | SUBS | SHOW | PRINT
+data ActionTag = SIMPL | SUBS | SHOW | PRINT | CONV
   deriving (Show, Read, Eq, Enum, Bounded)
 
 showActionTag :: ActionTag -> String
@@ -25,6 +26,7 @@ showActionTag SIMPL = "simplify"
 showActionTag SUBS = "substitute"
 showActionTag SHOW = "show"
 showActionTag PRINT = "print"
+showActionTag CONV = "convert"
 
 allActionTags :: [ActionTag]
 allActionTags = enumFrom minBound
@@ -38,8 +40,8 @@ parseActionChain ats = fmap (uncurry (++)) . go ats . vacuum
     go :: [ActionTag] -> String -> Result ([ActionTag], [ActionTag])
     go acc "" = Content (acc, [])
     go acc str = case splitPair (== '|') str of
-      ('<':cur, rest) -> guessElement cur allActionTags >>= \at -> go (at : acc) rest
-      (cur, rest) -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement cur allActionTags
+      ('<':cur, rest) -> guessElement showActionTag cur allActionTags >>= \at -> go (at : acc) rest
+      (cur, rest) -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement showActionTag cur allActionTags
 
 -- parseActionChain str = case removePrefix isSpace str of
 --   [] -> Content []
@@ -58,7 +60,8 @@ type family AllActions tg where
       DisplayResult tg,
       ParseResult tg,
       SimplifyResult tg,
-      SubstituteResult tg
+      SubstituteResult tg,
+      ConvertResult tg
     )
 
 parseByTag ::
@@ -80,6 +83,7 @@ action SIMPL cont obj = simplifyResult obj >>= cont
 action SUBS cont obj = substituteResult obj >>= cont
 action SHOW cont obj = cont (Content $ Raw (show obj))
 action PRINT cont obj = displayResult obj >>= cont
+action CONV cont obj = convertResult obj >>= cont
 
 actionChain :: AllActions tg =>
   [ActionTag] ->

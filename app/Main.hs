@@ -10,7 +10,7 @@ import Object.Bundle
 
 import Result
 import Input
-import Data.Char (toUpper)
+import Data.Char (toUpper, isSpace)
 import Data.List (intercalate, intersperse)
 import System.Environment (getArgs)
 import Data.Maybe (fromMaybe)
@@ -24,7 +24,8 @@ handle act = let lp = handleInterrupt lp act in lp
 
 loop :: Bool -> (ObjectTag, [ActionTag]) -> IIO ()
 loop pm p@(ot, ats) = do
-  when pm $ outputStrLn $ "(" ++ color "34" "object" ++ ": " ++ color "33" (showObjectTag ot) ++ "; " ++ color "34" "actions" ++ ": " ++ (concat (intersperse " > " $ map (color "33" . showActionTag) ats)) ++ ")"
+  let actstr = if null ats then color "33" "none" else (concat (intersperse " > " $ map (color "33" . showActionTag) ats))
+  when pm $ outputStrLn $ "(" ++ color "34" "object" ++ ": " ++ color "33" (showObjectTag ot) ++ "; " ++ color "34" "actions" ++ ": " ++ actstr ++ ")"
   minput <- getColoredInputLine $ replicate (promptLength - 2) '#' ++ ": "
   let process :: (a -> IIO ()) -> Result a -> IIO ()
       process = switch $ (>> loop True p) . printError
@@ -34,12 +35,13 @@ loop pm p@(ot, ats) = do
         []
   flip (switch (const $ return ())) minput $ \input -> case input of
     [] -> loop False p
-    ('s':'e':'t':' ':rest) ->
-      let mp' = case (splitPair (== '|') rest) of
-            (otstr, "") -> (,ats) <$> guessElement otstr allObjectTags
-            ("", atstr) -> (ot,) <$> parseActionChain [] atstr
-            (otstr, atstr) -> (,) <$> guessElement otstr allObjectTags <*> parseActionChain [] atstr
-       in process (\p' -> handle $ loop True p') mp'
+    ('s':'e':'t':rest) -> case filter (not . isSpace) rest of
+      "" -> loop True (ot, [])
+      str -> let mp' = case (splitPair (== '|') str) of
+                   (otstr, "") -> (,ats) <$> guessElement showObjectTag otstr allObjectTags
+                   ("", atstr) -> (ot,) <$> parseActionChain [] atstr
+                   (otstr, atstr) -> (,) <$> guessElement showObjectTag otstr allObjectTags <*> parseActionChain [] atstr
+              in process (\p' -> handle $ loop True p') mp'
     "help" -> helpAction
     "?" -> helpAction
     "exit" -> return ()

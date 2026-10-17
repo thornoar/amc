@@ -27,7 +27,7 @@ color :: String -> String -> String
 color typ str = "\ESC[" ++ typ ++ "m" ++ str ++ "\ESC[0m" -- ]]
 
 promptLength :: Int
-promptLength = 10
+promptLength = 12
 
 getPrompt :: Char -> String -> String -> String
 getPrompt rep body1 body2 = "\ESC[0m(" ++ color "33" body1 ++ " -> " ++ color "33" body2 ++ ") " ++ replicate n rep ++ ": \ESC[34m" -- ]]
@@ -67,14 +67,15 @@ parseArgs ("-a":str:rest) = insert' ActionOpt str $ parseArgs rest
 parseArgs ("-o":str:rest) = insert' ObjectOpt str $ parseArgs rest
 parseArgs (_:rest) = parseArgs rest
 
-guessElement :: Show a => String -> [a] -> Result a
-guessElement str lst = foldl go (Error $ "could not match prefix: `" ++ capStr ++ "`") lst
+guessElement :: (a -> String) -> String -> [a] -> Result a
+guessElement _ "" _ = Error "could not match empty prefix"
+guessElement sh str lst = foldl (go sh) (Error $ "could not match prefix: `" ++ capStr ++ "`") lst
   where
     capStr = map toUpper str
-    go :: Show a => Result a -> a -> Result a
-    go prev@(Content _) _ = prev
-    go prev a
-      | capStr `isPrefixOf` (map toUpper $ show a) = Content a
+    go :: (a -> String) -> Result a -> a -> Result a
+    go _ prev@(Content _) _ = prev
+    go f prev a
+      | capStr `isPrefixOf` (map toUpper $ f a) = Content a
       | otherwise = prev
 
 intersperse' :: Eq a => a -> [a] -> [a]
