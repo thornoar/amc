@@ -11,7 +11,7 @@ build-type:         Simple
 extra-doc-files:    CHANGELOG.md
 
 common common
-    ghc-options: -Wall -Werror=all
+    ghc-options: -Wall
     default-extensions:
         DataKinds
         GADTs

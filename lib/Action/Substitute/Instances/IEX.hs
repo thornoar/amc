@@ -1,6 +1,6 @@
 module Action.Substitute.Instances.IEX (substituteResult) where
 
-import Control.Monad (foldM, unless)
+import Control.Monad (foldM)
 import Data.Char (isSpace)
 import Data.List (nub)
 
@@ -8,7 +8,6 @@ import Input (IIO, getColoredInputLine, promptLength)
 import Object.Bundle
 import Parse.Instances.IEX (parse)
 import Result
-import System.Console.Haskeline (outputStr)
 
 substituteResult :: Object IEX -> IIO (Result (Object IEX))
 substituteResult obj = do
@@ -22,9 +21,7 @@ substituteResult obj = do
           Content str
             | all isSpace str -> return (Content e)
             | otherwise -> return (replace e name <$> parse str)
-  res <- foldM step (Content obj) vars
-  unless (null vars) (outputStr "\n")
-  return res
+  foldM step (Content obj) vars
 
 variables :: Object IEX -> [String]
 variables (IConst _) = []

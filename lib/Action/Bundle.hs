@@ -12,7 +12,7 @@ import Action.Simplify.Bundle
 import Action.Display.Bundle
 import Parse.Bundle
 import Description
-import Input (IIO, printError, splitPair, guessElement)
+import Input (IIO, printError, splitPair, guessElement, pipeSymbols)
 import Data.Char (isSpace)
 import Action.Substitute.Bundle
 import Action.Convert.Bundle
@@ -39,18 +39,13 @@ parseActionChain ats = fmap (uncurry (++)) . go ats . vacuum
   where
     go :: [ActionTag] -> String -> Result ([ActionTag], [ActionTag])
     go acc "" = Content (acc, [])
-    go acc str = case splitPair (`elem` ['|', '#', '@']) str of
-      (Just '#', cur, rest) -> guessElement showActionTag cur allActionTags >>= \at -> go (at : acc) rest
-      (Just '@', cur, rest) -> guessElement showActionTag cur allActionTags >>= \at -> go [at] rest
-      (Just '|', cur, rest) -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement showActionTag cur allActionTags
-
--- parseActionChain str = case removePrefix isSpace str of
---   [] -> Content []
---   c:rest -> let (atstr, other) = splitPair isSpace (removePrefix isSpace rest) in case guessElement atstr allActionTags of
---     Content at -> case c of
---       '|' -> fmap (at:) $ parseActionChain other
---       _ -> Error $ "unrecognized pipe symbol: " ++ show c
---     Error msg -> Error ("processing characters left after parsing: " ++ msg)
+    go acc (s:str) =
+      let (cur, rest) = splitPair True (`elem` pipeSymbols) str
+       in case s of
+            '|' -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement showActionTag cur allActionTags
+            '#' -> guessElement showActionTag cur allActionTags >>= \at -> go (at : acc) rest
+            '@' -> guessElement showActionTag cur allActionTags >>= \at -> go [at] rest
+            _ -> Error $ "unrecognized pipe symbol: `" ++ [s] ++ "`"
 
 instance Description ActionTag where description _ = "an action tag"
 
@@ -67,7 +62,6 @@ type family AllActions tg where
 
 parseByTag ::
   ObjectTag ->
-  -- (forall (tg :: ObjectTag). ParseResult tg => String -> Result (Object tg, String)) ->
   String ->
   (forall tg. AllActions tg => Result (Object tg) -> b) ->
   b
@@ -88,7 +82,6 @@ action CONV cont obj = convertResult obj >>= cont
 
 actionChain :: AllActions tg =>
   [ActionTag] ->
-  -- (forall tg'. AllActions tg' => Result (Object tg') -> IIO ()) ->
   IIO () ->
   Object tg ->
   IIO ()

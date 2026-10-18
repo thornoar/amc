@@ -7,7 +7,6 @@ import Input (IIO, getColoredInputLine, promptLength, splitPair)
 import Result
 import Description
 import Object.RealNumber (RealNumber(Dbl))
-import System.Console.Haskeline (outputStrLn)
 
 data Unit =
     NanoMeter | MicroMeter | MilliMeter | CentiMeter | DeciMeter | Meter | KiloMeter | Mile | Inch | Foot
@@ -238,8 +237,7 @@ getUnits = do
   let prstr = " from > to: "
       go (ustr1, ustr2) = (,) <$> guessUnit ustr1 <*> guessUnit ustr2
   input <- getColoredInputLine $ replicate (promptLength - length prstr) '#' ++ prstr
-  outputStrLn ""
-  return $ input >>= go . splitPair (== '>') . filter (/= ' ')
+  return $ input >>= go . splitPair False (== '>') . filter (/= ' ')
 
 type ConvertResult :: ObjectTag -> Constraint
 class ConvertResult tg where

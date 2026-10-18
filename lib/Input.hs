@@ -49,14 +49,20 @@ split (a:as) delim
       (bs:bss) -> (a:bs) : bss
       [] -> [[a]]
 
-splitPair :: Eq a => (a -> Bool) -> [a] -> (Maybe a, [a],[a])
-splitPair _ [] = (Nothing, [],[])
-splitPair test (a:rest)
-  | test a = (Just a, [], rest)
-  | otherwise = let (r, lft, rgt) = splitPair test rest in (r, a : lft, rgt)
+splitPair :: Eq a => Bool -> (a -> Bool) -> [a] -> ([a],[a])
+splitPair _ _ [] = ([],[])
+splitPair kp test (a:rest)
+  | test a = ([], if kp then a:rest else rest)
+  | otherwise = let (lft, rgt) = splitPair kp test rest in (a : lft, rgt)
+
+pipeSymbols :: [Char]
+pipeSymbols = ['|', '#', '@']
 
 printError :: String -> IIO ()
-printError msg = outputStrLn (color "31" "Error:" ++ " " ++ msg)
+printError msg = outputStrLn ("\n " ++ color "31" "Error:" ++ " " ++ msg)
+
+printError' :: String -> IO ()
+printError' msg = putStrLn ("\n " ++ color "31" "Error:" ++ " " ++ msg)
 
 insert' :: Ord k => k -> a -> Map k a -> Map k a
 insert' = insertWith (\_ b -> b)
@@ -69,13 +75,12 @@ parseArgs (_:rest) = parseArgs rest
 
 guessElement :: (a -> String) -> String -> [a] -> Result a
 guessElement _ "" _ = Error "could not match empty prefix"
-guessElement sh str lst = foldl (go sh) (Error $ "could not match prefix: `" ++ capStr ++ "`") lst
+guessElement sh str lst = foldl (go sh) (Error $ "could not match prefix: `" ++ str ++ "`") lst
   where
-    capStr = map toUpper str
     go :: (a -> String) -> Result a -> a -> Result a
     go _ prev@(Content _) _ = prev
     go f prev a
-      | capStr `isPrefixOf` (map toUpper $ f a) = Content a
+      | str `isPrefixOf` (f a) = Content a
       | otherwise = prev
 
 intersperse' :: Eq a => a -> [a] -> [a]
