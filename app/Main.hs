@@ -13,9 +13,7 @@ import Input
 import Data.Char (isSpace)
 import Data.List (intercalate, intersperse)
 import System.Environment (getArgs)
--- import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
--- import Text.Read (readMaybe)
 import Data.List.Unique (uniq)
 import Control.Monad (when)
 
@@ -29,9 +27,10 @@ loop pm p@(ot, ats) = do
   minput <- getColoredInputLine $ replicate (promptLength - 2) '#' ++ ": "
   let process :: (a -> IIO ()) -> Result a -> IIO ()
       process = switch $ (>> loop True p) . printError
-      helpAction = (>> loop True p) . outputStrLn . unlines $
-        ("\nAvailable objects: " ++ intercalate ", " (map showObjectTag allObjectTags)) :
-        ("Available actions: " ++ intercalate ", " (map showActionTag allActionTags)) :
+      helpAction = (>> loop True p) . outputStr . unlines $
+        ("\n Available objects: " ++ intercalate ", " (map showObjectTag allObjectTags)) :
+        (" Supported actions: " ++ intercalate ", " (map showActionTag allActionTags)) :
+        (" Pipe symbols: " ++ intercalate ", " (map show pipeSymbols)) :
         []
   flip (switch (const $ return ())) minput $ \input -> case input of
     [] -> loop False p
