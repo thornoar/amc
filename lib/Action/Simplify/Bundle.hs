@@ -10,6 +10,7 @@ import Description
 
 import qualified Action.Simplify.Instances.IEX as SIEX
 import qualified Action.Simplify.Instances.REX as SREX
+import qualified Action.Simplify.Instances.BEX as SBEX
 import Input (IIO)
 
 type SimplifyResult :: ObjectTag -> Constraint
@@ -24,3 +25,6 @@ instance {-# OVERLAPPING #-} SimplifyResult IEX where
 
 instance {-# OVERLAPPING #-} SimplifyResult REX where
   simplifyResult = return . SREX.simplifyResult
+
+instance {-# OVERLAPPING #-} SimplifyResult BEX where
+  simplifyResult = return . SBEX.simplifyResult

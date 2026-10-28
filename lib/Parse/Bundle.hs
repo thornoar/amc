@@ -11,6 +11,7 @@ import Description
 
 import qualified Parse.Instances.IEX as PIEX
 import qualified Parse.Instances.REX as PREX
+import qualified Parse.Instances.BEX as PBEX
 
 type ParseResult :: ObjectTag -> Constraint
 class ParseResult tg where
@@ -24,6 +25,9 @@ instance {-# OVERLAPPING #-} ParseResult IEX where
 
 instance {-# OVERLAPPING #-} ParseResult REX where
   parseResult = PREX.parse
+
+instance {-# OVERLAPPING #-} ParseResult BEX where
+  parseResult = PBEX.parse
 
 instance {-# OVERLAPPING #-} ParseResult STR where
   parseResult = Content . Raw

@@ -11,6 +11,7 @@ import Description
 
 import qualified Action.Display.Instances.IEX as DIEX
 import qualified Action.Display.Instances.REX as DREX
+import qualified Action.Display.Instances.BEX as DBEX
 import Input (IIO)
 import System.Console.Haskeline (outputStrLn)
 
@@ -29,6 +30,9 @@ instance {-# OVERLAPPING #-} DisplayResult IEX where
 
 instance {-# OVERLAPPING #-} DisplayResult REX where
   displayResult = returnAfter (outputStrLn . DREX.display) Content
+
+instance {-# OVERLAPPING #-} DisplayResult BEX where
+  displayResult = returnAfter (outputStrLn . DBEX.display) Content
 
 instance {-# OVERLAPPING #-} DisplayResult STR where
   displayResult (Raw str) = returnAfter (outputStrLn . ("\n " ++)) (Content . Raw) str

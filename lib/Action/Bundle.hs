@@ -42,7 +42,7 @@ parseActionChain ats = fmap (uncurry (++)) . go ats . vacuum
     go acc (s:str) =
       let (cur, rest) = splitPair True (`elem` pipeSymbols) str
        in case s of
-            '|' -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement showActionTag cur allActionTags
+            '$' -> go acc rest >>= \ (l,r) -> (\x -> (l, x:r)) <$> guessElement showActionTag cur allActionTags
             '#' -> guessElement showActionTag cur allActionTags >>= \at -> go (at : acc) rest
             '@' -> guessElement showActionTag cur allActionTags >>= \at -> go [at] rest
             _ -> Error $ "unrecognized pipe symbol: `" ++ [s] ++ "`"
@@ -68,6 +68,7 @@ parseByTag ::
 parseByTag IEX a cont = cont (parseResult a :: Result (Object IEX))
 parseByTag REX a cont = cont (parseResult a :: Result (Object REX))
 parseByTag STR a cont = cont (parseResult a :: Result (Object STR))
+parseByTag BEX a cont = cont (parseResult a :: Result (Object BEX))
 
 action :: AllActions tg =>
   ActionTag ->

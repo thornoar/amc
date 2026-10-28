@@ -59,18 +59,18 @@ smax = extreme (<)
 smax' :: Ord b1 => [(b1, b1, b2)] -> (b1, b1)
 smax' syms = (maximum $ map (select 1) syms, maximum $ map (select 2) syms)
 
-placeString :: Int -> String -> [Symbol]
-placeString y = zipWith (\x c -> (x, y, c)) [0..]
+placeString :: Int -> Int -> String -> [Symbol]
+placeString x y = zipWith (\x' c -> (x', y, c)) [x..]
 
 place :: Int -> Int -> [Symbol] -> [Symbol]
 place x y syms =
   let (mx, my) = smin' syms
    in shift (x - mx) (y - my) syms
 
-binop :: Char -> [Symbol] -> [Symbol] -> [Symbol]
-binop c s1 s2 = 
+binop :: String -> [Symbol] -> [Symbol] -> [Symbol]
+binop str s1 s2 = 
   let (m1x, _) = smax' s1
-   in s1 ++ [(m1x+2, 0, c)] ++ shift (m1x + 4) 0 s2
+   in s1 ++ placeString (m1x+2) 0 str ++ shift (m1x + 3 + length str) 0 s2
 
 addParens :: [Symbol] -> [Symbol]
 addParens syms =

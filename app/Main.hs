@@ -28,8 +28,8 @@ loop pm p@(ot, ats) = do
   let process :: (a -> IIO ()) -> Result a -> IIO ()
       process = switch $ (>> loop True p) . printError
       helpAction = (>> loop True p) . outputStr . unlines $
-        ("\n Available objects: " ++ intercalate ", " (map showObjectTag allObjectTags)) :
-        (" Supported actions: " ++ intercalate ", " (map showActionTag allActionTags)) :
+        ("\n Available objects:\n" ++ concat (map ((++ "\n") . ("   " ++) . showObjectTag) allObjectTags)) :
+        (" Supported actions:\n" ++ concat (map ((++ "\n") . ("   " ++) . showActionTag) allActionTags)) :
         (" Pipe symbols: " ++ intercalate ", " (map show pipeSymbols)) :
         []
   flip (switch (const $ return ())) minput $ \input -> case input of

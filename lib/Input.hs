@@ -5,7 +5,6 @@ module Input where
 import System.Console.Haskeline
 import Result
 import Data.Map (Map, empty, insertWith)
-import Data.Char (toUpper)
 import Data.List (isPrefixOf)
 
 data OptionName = ObjectOpt | ActionOpt
@@ -56,7 +55,7 @@ splitPair kp test (a:rest)
   | otherwise = let (lft, rgt) = splitPair kp test rest in (a : lft, rgt)
 
 pipeSymbols :: [Char]
-pipeSymbols = ['|', '#', '@']
+pipeSymbols = ['$', '#', '@']
 
 printError :: String -> IIO ()
 printError msg = outputStrLn ("\n " ++ color "31" "Error:" ++ " " ++ msg)
