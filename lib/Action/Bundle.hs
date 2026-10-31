@@ -18,7 +18,7 @@ import Action.Substitute.Bundle
 import Action.Convert.Bundle
 -- import Data.Char (isSpace)
 
-data ActionTag = SIMPL | SUBS | SHOW | PRINT | CONV
+data ActionTag = SIMPL | SUBS | SHOW | PRINT | CONV | RETURN
   deriving (Show, Read, Eq, Enum, Bounded)
 
 showActionTag :: ActionTag -> String
@@ -27,6 +27,7 @@ showActionTag SUBS = "substitute"
 showActionTag SHOW = "show"
 showActionTag PRINT = "print"
 showActionTag CONV = "convert"
+showActionTag RETURN = "return"
 
 allActionTags :: [ActionTag]
 allActionTags = enumFrom minBound
@@ -80,6 +81,7 @@ action SUBS cont obj = substituteResult obj >>= cont
 action SHOW cont obj = cont (Content $ Raw (show obj))
 action PRINT cont obj = displayResult obj >>= cont
 action CONV cont obj = convertResult obj >>= cont
+action RETURN cont obj = cont (Content obj)
 
 actionChain :: AllActions tg =>
   [ActionTag] ->
