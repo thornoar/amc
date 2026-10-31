@@ -236,7 +236,7 @@ getUnits :: IIO (Result (Unit, Unit))
 getUnits = do
   let prstr = " from > to: "
       go (ustr1, ustr2) = (,) <$> guessUnit ustr1 <*> guessUnit ustr2
-  input <- getColoredInputLine $ replicate (promptLength - length prstr) '#' ++ prstr
+  input <- getColoredInputLine $ "\n" ++ replicate (promptLength - length prstr) '#' ++ prstr
   return $ input >>= go . splitPair False (== '>') . filter (/= ' ')
 
 type ConvertResult :: ObjectTag -> Constraint
