@@ -62,7 +62,6 @@ executable amc
         base ^>=4.20.2.0,
         haskeline,
         containers,
-        Unique,
         amclib,
     hs-source-dirs:   app
     default-language: Haskell2010

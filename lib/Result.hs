@@ -29,3 +29,7 @@ readResult str = let ma = readMaybe str in case ma of
 
 todo :: Result a
 todo = Error "Not implemented yet"
+
+raise :: Monad m => (a -> m (Result b)) -> Result a -> m (Result b)
+raise f (Content a) = f a
+raise _ (Error msg) = return (Error msg)

@@ -71,16 +71,21 @@ parseByTag REX a cont = cont (parseResult a :: Result (Object REX))
 parseByTag STR a cont = cont (parseResult a :: Result (Object STR))
 parseByTag BEX a cont = cont (parseResult a :: Result (Object BEX))
 
+-- printAndReturn :: (AllActions tg) => Result (Object tg) -> IIO (Result (Object tg))
+-- printAndReturn (Content obj) = do
+--   displayResult obj
+-- printAndReturn (Error msg) = return (Error msg)
+
 action :: AllActions tg =>
   ActionTag ->
   (forall tg'. AllActions tg' => Result (Object tg') -> IIO a) ->
   Object tg ->
   IIO a
-action SIMPL cont obj = simplifyResult obj >>= cont
-action SUBS cont obj = substituteResult obj >>= cont
-action SHOW cont obj = cont (Content $ Raw (show obj))
+action SIMPL cont obj = simplifyResult obj >>= raise displayResult >>= cont
+action SUBS cont obj = substituteResult obj >>= raise displayResult >>= cont
+action SHOW cont obj = displayResult (Raw (show obj)) >> cont (Content obj)
 action PRINT cont obj = displayResult obj >>= cont
-action CONV cont obj = convertResult obj >>= cont
+action CONV cont obj = convertResult obj >>= raise displayResult >>= cont
 action RETURN cont obj = cont (Content obj)
 
 actionChain :: AllActions tg =>

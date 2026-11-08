@@ -14,7 +14,7 @@ import Data.Char (isSpace)
 import Data.List (intercalate, intersperse)
 import System.Environment (getArgs)
 import qualified Data.Map as M
-import Data.List.Unique (uniq)
+-- import Data.List.Unique (uniq)
 import Control.Monad (when)
 
 handle :: IIO () -> IIO ()
@@ -49,7 +49,7 @@ loop pm p@(ot, ats) = do
           in parseByTag ot objstr $ process $
             \obj -> process
               (\ats' -> actionChain ats' (loop True p) obj)
-              (fmap (uniq . intersperse' PRINT) $ parseActionChain ats pipes)
+              (parseActionChain ats pipes)
 
 settings :: Settings IO
 settings = Settings {
