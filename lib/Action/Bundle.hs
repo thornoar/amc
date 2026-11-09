@@ -16,9 +16,10 @@ import Input (IIO, printError, splitPair, guessElement, pipeSymbols)
 import Data.Char (isSpace)
 import Action.Substitute.Bundle
 import Action.Convert.Bundle
+import Cache.Bundle (Cache, cache)
 -- import Data.Char (isSpace)
 
-data ActionTag = SIMPL | SUBS | SHOW | PRINT | CONV | RETURN
+data ActionTag = SIMPL | SUBS | SHOW | PRINT | CONV
   deriving (Show, Read, Eq, Enum, Bounded)
 
 showActionTag :: ActionTag -> String
@@ -27,7 +28,7 @@ showActionTag SUBS = "substitute"
 showActionTag SHOW = "show"
 showActionTag PRINT = "print"
 showActionTag CONV = "convert"
-showActionTag RETURN = "return"
+-- showActionTag RETURN = "return"
 
 allActionTags :: [ActionTag]
 allActionTags = enumFrom minBound
@@ -56,6 +57,7 @@ type family AllActions tg where
       Description tg,
       DisplayResult tg,
       ParseResult tg,
+      Cache tg,
       SimplifyResult tg,
       SubstituteResult tg,
       ConvertResult tg
@@ -71,31 +73,32 @@ parseByTag REX a cont = cont (parseResult a :: Result (Object REX))
 parseByTag STR a cont = cont (parseResult a :: Result (Object STR))
 parseByTag BEX a cont = cont (parseResult a :: Result (Object BEX))
 
--- printAndReturn :: (AllActions tg) => Result (Object tg) -> IIO (Result (Object tg))
--- printAndReturn (Content obj) = do
---   displayResult obj
--- printAndReturn (Error msg) = return (Error msg)
+addAns :: Cache tg => [String] -> Result (Object tg) -> [String]
+addAns hist (Content obj) = (cache obj) : hist
+addAns hist _ = hist
 
 action :: AllActions tg =>
   ActionTag ->
-  (forall tg'. AllActions tg' => Result (Object tg') -> IIO a) ->
+  (forall tg'. AllActions tg' => Result (Object tg') -> [String] -> IIO a) ->
   Object tg ->
+  [String] ->
   IIO a
-action SIMPL cont obj = simplifyResult obj >>= raise displayResult >>= cont
-action SUBS cont obj = substituteResult obj >>= raise displayResult >>= cont
-action SHOW cont obj = displayResult (Raw (show obj)) >> cont (Content obj)
-action PRINT cont obj = displayResult obj >>= cont
-action CONV cont obj = convertResult obj >>= raise displayResult >>= cont
-action RETURN cont obj = cont (Content obj)
+action SIMPL cont obj hist = simplifyResult obj >>= raise displayResult >>= cont <*> (addAns hist)
+action SUBS cont obj hist = substituteResult obj >>= raise displayResult >>= cont <*> (addAns hist)
+action SHOW cont obj hist = displayResult (Raw (show obj)) >> cont (Content obj) (cache obj : hist)
+action PRINT cont obj hist = displayResult obj >>= cont <*> (addAns hist)
+action CONV cont obj hist = convertResult obj >>= raise displayResult >>= cont <*> (addAns hist)
+-- action RETURN cont obj hist = cont (Content obj) (cache obj : hist)
 
 actionChain :: AllActions tg =>
   [ActionTag] ->
-  IIO () ->
+  ([String] -> IIO ()) ->
   Object tg ->
+  [String] ->
   IIO ()
-actionChain [] cont _ = cont
-actionChain (at:rest) cont obj = action at f obj
+actionChain [] cont _ hist = cont hist
+actionChain (at:rest) cont obj hist = action at f obj hist
   where
-    f :: forall tg'. AllActions tg' => Result (Object tg') -> IIO ()
-    f (Error msg) = printError msg >> cont
+    f :: forall tg'. AllActions tg' => Result (Object tg') -> [String] -> IIO ()
+    f (Error msg) = (printError msg >>) . cont
     f (Content newobj) = actionChain rest cont newobj

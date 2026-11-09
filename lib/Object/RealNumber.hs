@@ -19,6 +19,22 @@ constToDouble E = 2.718281828459045235360287471352662498
 constToDouble GAMMA = 0.577215664901532860606512090082402431
 constToDouble LN2 = 0.693147180559945309417232121458176568
 
+cacheRN :: RealNumber -> String
+cacheRN (In v) = show v
+cacheRN (Dbl v) = show v
+cacheRN PI = "pi"
+cacheRN E = "e"
+cacheRN GAMMA = "gamma"
+cacheRN LN2 = "ln(2)"
+
+cacheBF :: BuiltinFunction -> String
+cacheBF Exp = "exp"
+cacheBF Ln = "ln"
+cacheBF Sin = "sin"
+cacheBF Cos = "cos"
+cacheBF Tan = "tan"
+cacheBF Cot = "cot"
+
 -- isPositiveConst :: RealConst -> Bool
 -- isPositiveConst (Rt r) = r > 0
 -- isPositiveConst (Dbl v) = v > 0
