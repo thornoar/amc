@@ -10,6 +10,7 @@ import Result
 
 import qualified Action.Substitute.Instances.IEX as SubIEX
 import qualified Action.Substitute.Instances.REX as SubREX
+import qualified Action.Substitute.Instances.BEX as SubBEX
 
 type SubstituteResult :: ObjectTag -> Constraint
 class SubstituteResult tg where
@@ -23,3 +24,6 @@ instance {-# OVERLAPPING #-} SubstituteResult IEX where
 
 instance {-# OVERLAPPING #-} SubstituteResult REX where
   substituteResult = SubREX.substituteResult
+
+instance {-# OVERLAPPING #-} SubstituteResult BEX where
+  substituteResult = SubBEX.substituteResult

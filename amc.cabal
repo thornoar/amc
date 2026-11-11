@@ -41,6 +41,7 @@ library amclib
         Action.Substitute.Bundle,
         Action.Substitute.Instances.IEX,
         Action.Substitute.Instances.REX,
+        Action.Substitute.Instances.BEX,
         Action.Convert.Bundle,
         Cache.Bundle,
         Result,
