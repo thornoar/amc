@@ -24,7 +24,6 @@ instance Description STR where description _ = "a raw string"
 instance Description ObjectTag where description _ = "an object tag"
 
 data Object tg where
-  -- Integer arithmetic
   IConst :: Integer -> Object IEX
   INeg :: Object IEX -> Object IEX
   ISum :: Object IEX -> Object IEX -> Object IEX
@@ -34,7 +33,6 @@ data Object tg where
   IPow :: Object IEX -> Object IEX -> Object IEX
   IVar :: String -> Object IEX
 
-  -- Real number arithmetic
   RConst :: RealNumber -> Object REX
   RNeg :: Object REX -> Object REX
   RSum :: Object REX -> Object REX -> Object REX

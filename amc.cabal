@@ -19,6 +19,7 @@ common common
         GADTs
         StandaloneKindSignatures
         FlexibleInstances
+        UndecidableInstances
 
 library amclib
     import: common
@@ -43,6 +44,9 @@ library amclib
         Action.Substitute.Instances.REX,
         Action.Substitute.Instances.BEX,
         Action.Convert.Bundle,
+        Action.Differentiate.Bundle,
+        Action.Differentiate.Instances.IEX,
+        Action.Differentiate.Instances.REX,
         Cache.Bundle,
         Result,
         Description,

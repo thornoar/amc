@@ -17,9 +17,10 @@ import Data.Char (isSpace)
 import Action.Substitute.Bundle
 import Action.Convert.Bundle
 import Cache.Bundle (Cache, cache)
+import Action.Differentiate.Bundle
 -- import Data.Char (isSpace)
 
-data ActionTag = SIMPL | SUBS | SHOW | PRINT | CONV
+data ActionTag = SIMPL | SUBS | SHOW | PRINT | CONV | DIFF
   deriving (Show, Read, Eq, Enum, Bounded)
 
 showActionTag :: ActionTag -> String
@@ -28,6 +29,7 @@ showActionTag SUBS = "substitute"
 showActionTag SHOW = "show"
 showActionTag PRINT = "print"
 showActionTag CONV = "convert"
+showActionTag DIFF = "differentiate"
 -- showActionTag RETURN = "return"
 
 allActionTags :: [ActionTag]
@@ -60,6 +62,7 @@ type family AllActions tg where
       Cache tg,
       SimplifyResult tg,
       SubstituteResult tg,
+      DifferentiateResult tg,
       ConvertResult tg
     )
 
@@ -88,6 +91,7 @@ action SUBS cont obj hist = substituteResult obj >>= raise displayResult >>= con
 action SHOW cont obj hist = displayResult (Raw (show obj)) >> cont (Content obj) (cache obj : hist)
 action PRINT cont obj hist = displayResult obj >>= cont <*> (addAns hist)
 action CONV cont obj hist = convertResult obj >>= raise displayResult >>= cont <*> (addAns hist)
+action DIFF cont obj hist = differentiateResult obj >>= raise displayResult >>= cont <*> (addAns hist)
 -- action RETURN cont obj hist = cont (Content obj) (cache obj : hist)
 
 actionChain :: AllActions tg =>
